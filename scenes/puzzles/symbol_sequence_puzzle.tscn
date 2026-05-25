@@ -56,35 +56,35 @@ columns = 3
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 
-[node name="MoonButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
+[node name="BirdButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
 theme_override_font_sizes/font_size = 25
-text = "Lua"
-
-[node name="FlowerButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
-custom_minimum_size = Vector2(240, 82)
-theme_override_font_sizes/font_size = 25
-text = "Flor"
+text = "Pássaro"
 
 [node name="CrownButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
 theme_override_font_sizes/font_size = 25
 text = "Coroa"
 
-[node name="KeyButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
+[node name="MoonButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
 theme_override_font_sizes/font_size = 25
-text = "Chave"
-
-[node name="BirdButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
-custom_minimum_size = Vector2(240, 82)
-theme_override_font_sizes/font_size = 25
-text = "Passaro"
+text = "Lua"
 
 [node name="StarButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
 theme_override_font_sizes/font_size = 25
 text = "Estrela"
+
+[node name="KeyButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
+custom_minimum_size = Vector2(240, 82)
+theme_override_font_sizes/font_size = 25
+text = "Chave"
+
+[node name="FlowerButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
+custom_minimum_size = Vector2(240, 82)
+theme_override_font_sizes/font_size = 25
+text = "Flor"
 
 [node name="MessageLabel" type="Label" parent="Panel/MarginContainer/Layout"]
 horizontal_alignment = 1
