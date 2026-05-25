@@ -7,14 +7,14 @@ const ITEMS := {
 		"icon": "res://art/items/bedroom/item_jacket_note.png",
 		"region": Rect2(175, 160, 960, 900),
 		"type": "readable",
-		"text": "Quando a noite entrar sem ser convidada, não procure primeiro nas mãos dos vivos.\n\nComece por aquilo que repousa sobre o peito de quem já não fala.\nDepois, siga para a flor que nunca murcha, costurada no assento do descanso.\nOnde a luz fria tocar o chão, curve-se diante da coroa esquecida.\nPor fim, busque no livro fechado aquilo que abre o que foi calado.\n\nSó nessa ordem a lembrança dela consentirá em se revelar."
+		"text": "Quando a noite entrar sem ser convidada, não procure primeiro nas mãos dos vivos.\n\nComece onde o rosto antigo guarda, junto ao peito, o brilho que não lhe pertence.\nDepois, procure descanso no lugar em que o bordado resiste ao tempo.\nOnde a claridade fria cair sobre o chão, abaixe os olhos para o desenho esquecido.\nPor fim, volte-se à escrita fechada sobre a madeira de trabalho.\n\nSó nessa ordem a lembrança dela consentirá em se revelar."
 	},
 	"item_small_victorian_key": {
 		"name": "Chave pequena",
 		"description": "Uma pequena chave vitoriana de latão envelhecido.",
 		"icon": "res://art/items/bedroom/item_small_victorian_key.png",
 		"region": Rect2(130, 320, 1100, 520),
-		"type": "key",
+		"type": "inspectable",
 		"text": ""
 	},
 	"item_box_letter": {

@@ -20,7 +20,10 @@ func open_item(item_id: String) -> void:
 		return
 
 	title_label.text = item_data.get("name", item_id)
-	body_label.text = item_data.get("text", item_data.get("description", ""))
+	var body_text: String = item_data.get("text", "")
+	if body_text.is_empty():
+		body_text = item_data.get("description", "")
+	body_label.text = body_text
 	item_image.texture = ItemDatabase.get_item_texture(item_id)
 	visible = true
 	AudioManager.play_sfx("paper_open")

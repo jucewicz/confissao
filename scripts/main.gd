@@ -1,16 +1,20 @@
 extends Node
 
 const ItemDatabase := preload("res://scripts/data/item_database.gd")
+const MESSAGE_VISIBLE_TIME := 2.4
+const MESSAGE_FADE_TIME := 0.45
 
 @onready var current_room_container: Node = $CurrentRoomContainer
 @onready var zoom_manager: Control = $ZoomLayer/ZoomManager
 @onready var inventory_ui: Control = $UILayer/InventoryUI
 @onready var letter_popup: Control = $UILayer/ReadableLetterPopup
+@onready var message_panel: PanelContainer = $UILayer/MessagePanel
 @onready var message_label: Label = $UILayer/MessagePanel/MessageLabel
 @onready var puzzle: Control = $PuzzleLayer/SymbolSequencePuzzle
 
 var bedroom_scene := preload("res://scenes/rooms/bedroom/bedroom_main.tscn")
 var hovered_interactables: Dictionary = {}
+var message_tween: Tween = null
 var cursor_shape_by_type := {
 	"interact": Input.CURSOR_POINTING_HAND,
 	"pickup": Input.CURSOR_CAN_DROP,
@@ -156,7 +160,8 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 
 func _on_inventory_item_selected(item_id: String) -> void:
 	var item_data := ItemDatabase.get_item(item_id)
-	if item_data.get("type", "") == "readable":
+	var item_type: String = item_data.get("type", "")
+	if item_type == "readable" or item_type == "inspectable":
 		if item_id == "item_jacket_note":
 			GameState.set_flag("bedroom_jacket_note_read", true)
 		if item_id == "item_box_letter":
@@ -208,8 +213,30 @@ func _is_jewelry_box_empty() -> bool:
 
 
 func show_message(text: String) -> void:
+	if message_tween != null:
+		message_tween.kill()
+
 	message_label.text = text
+	message_panel.visible = true
+	message_panel.modulate.a = 1.0
+
+	message_tween = create_tween()
+	message_tween.tween_interval(MESSAGE_VISIBLE_TIME)
+	message_tween.tween_property(message_panel, "modulate:a", 0.0, MESSAGE_FADE_TIME)
+	message_tween.tween_callback(_on_message_faded)
 
 
 func clear_message() -> void:
+	if message_tween != null:
+		message_tween.kill()
+		message_tween = null
+
 	message_label.text = ""
+	message_panel.modulate.a = 0.0
+	message_panel.visible = false
+
+
+func _on_message_faded() -> void:
+	message_tween = null
+	message_label.text = ""
+	message_panel.visible = false
