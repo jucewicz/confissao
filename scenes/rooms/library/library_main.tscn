@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://art/backgrounds/library/library.png" id="1"]
+
+[node name="LibraryMain" type="Node2D"]
+
+[node name="Content" type="Node2D" parent="."]
+scale = Vector2(1.14833, 1.14772)
+
+[node name="Background" type="Sprite2D" parent="Content"]
+position = Vector2(836, 470.5)
+texture = ExtResource("1")

@@ -3,6 +3,7 @@ extends Node
 const ItemDatabase := preload("res://scripts/data/item_database.gd")
 const MESSAGE_VISIBLE_TIME := 2.4
 const MESSAGE_FADE_TIME := 0.45
+const ROOM_FADE_TIME := 0.25
 
 @onready var current_room_container: Node = $CurrentRoomContainer
 @onready var zoom_manager: Control = $ZoomLayer/ZoomManager
@@ -10,11 +11,22 @@ const MESSAGE_FADE_TIME := 0.45
 @onready var letter_popup: Control = $UILayer/ReadableLetterPopup
 @onready var message_panel: PanelContainer = $UILayer/MessagePanel
 @onready var message_label: Label = $UILayer/MessagePanel/MessageLabel
+@onready var exit_to_hall_button: TextureButton = $UILayer/ExitToHallButton
+@onready var fade_rect: ColorRect = $FadeLayer/FadeRect
 @onready var puzzle: Control = $PuzzleLayer/SymbolSequencePuzzle
 
-var bedroom_scene := preload("res://scenes/rooms/bedroom/bedroom_main.tscn")
+var room_scenes := {
+	"hall": preload("res://scenes/rooms/hall/hall_main.tscn"),
+	"bedroom": preload("res://scenes/rooms/bedroom/bedroom_main.tscn"),
+	"office": preload("res://scenes/rooms/office/office_main.tscn"),
+	"library": preload("res://scenes/rooms/library/library_main.tscn"),
+	"dining_room": preload("res://scenes/rooms/dining_room/dining_room_main.tscn"),
+}
+
+var current_room_id := ""
 var hovered_interactables: Dictionary = {}
 var message_tween: Tween = null
+var room_transition_tween: Tween = null
 var cursor_shape_by_type := {
 	"interact": Input.CURSOR_POINTING_HAND,
 	"pickup": Input.CURSOR_CAN_DROP,
@@ -29,13 +41,16 @@ func _ready() -> void:
 	_setup_custom_cursors()
 	GameState.reset()
 	Inventory.clear()
-	_load_bedroom()
+	_setup_room_navigation_ui()
+	go_to_room("hall", false)
 	zoom_manager.zoom_interaction_requested.connect(_on_zoom_interaction_requested)
+	zoom_manager.zoom_opened.connect(_on_zoom_opened)
+	zoom_manager.zoom_closed.connect(_on_zoom_visibility_changed)
 	inventory_ui.item_selected.connect(_on_inventory_item_selected)
 	puzzle.visible = false
 	puzzle.puzzle_solved.connect(_on_jewelry_puzzle_solved)
 	puzzle.puzzle_closed.connect(_close_puzzle)
-	show_message("Investigue o quarto.")
+	show_message("Escolha uma porta.")
 
 
 func _process(_delta: float) -> void:
@@ -100,19 +115,94 @@ func _get_hovered_ui_cursor_shape() -> int:
 	return -1
 
 
-func _load_bedroom() -> void:
+func _setup_room_navigation_ui() -> void:
+	exit_to_hall_button.pressed.connect(_on_exit_to_hall_pressed)
+	exit_to_hall_button.mouse_entered.connect(_on_exit_to_hall_hover_changed.bind(true))
+	exit_to_hall_button.mouse_exited.connect(_on_exit_to_hall_hover_changed.bind(false))
+	exit_to_hall_button.visible = false
+	exit_to_hall_button.modulate.a = 0.62
+	fade_rect.visible = true
+	fade_rect.modulate.a = 0.0
+
+
+func go_to_room(room_id: String, animated: bool = true) -> void:
+	if not room_scenes.has(room_id):
+		push_warning("Cenario nao encontrado: " + room_id)
+		return
+
+	if room_transition_tween != null:
+		room_transition_tween.kill()
+
+	if animated:
+		_set_exit_to_hall_visible(false)
+		fade_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+		room_transition_tween = create_tween()
+		room_transition_tween.tween_property(fade_rect, "modulate:a", 1.0, ROOM_FADE_TIME)
+		room_transition_tween.tween_callback(_load_room.bind(room_id))
+		room_transition_tween.tween_property(fade_rect, "modulate:a", 0.0, ROOM_FADE_TIME)
+		room_transition_tween.tween_callback(func() -> void:
+			room_transition_tween = null
+			fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_update_exit_to_hall_visibility()
+		)
+	else:
+		_load_room(room_id)
+		_update_exit_to_hall_visibility()
+
+
+func _load_room(room_id: String) -> void:
 	for child in current_room_container.get_children():
 		child.queue_free()
 
-	var room := bedroom_scene.instantiate()
+	current_room_id = room_id
+	hovered_interactables.clear()
+	var room: Node = room_scenes[room_id].instantiate()
 	current_room_container.add_child(room)
-	room.interaction_requested.connect(_on_room_interaction_requested)
+	if room.has_signal("interaction_requested"):
+		room.interaction_requested.connect(_on_room_interaction_requested)
+
+
+func _set_exit_to_hall_visible(is_visible: bool) -> void:
+	exit_to_hall_button.visible = is_visible
+	exit_to_hall_button.disabled = not is_visible
+
+
+func _update_exit_to_hall_visibility() -> void:
+	_set_exit_to_hall_visible(current_room_id != "hall" and not zoom_manager.visible)
+
+
+func _on_zoom_visibility_changed() -> void:
+	_update_exit_to_hall_visibility()
+
+
+func _on_zoom_opened(_zoom_id: String) -> void:
+	_update_exit_to_hall_visibility()
+
+
+func _on_exit_to_hall_pressed() -> void:
+	clear_message()
+	AudioManager.play_sfx("door")
+	go_to_room("hall")
+
+
+func _on_exit_to_hall_hover_changed(is_hovered: bool) -> void:
+	exit_to_hall_button.modulate.a = 1.0 if is_hovered else 0.62
 
 
 func _on_room_interaction_requested(interaction_id: String) -> void:
 	clear_message()
 
 	match interaction_id:
+		"go_bedroom":
+			go_to_room("bedroom")
+		"go_office":
+			go_to_room("office")
+		"go_library":
+			go_to_room("library")
+		"go_dining_room":
+			go_to_room("dining_room")
+		"go_center_locked":
+			show_message("Esta porta nao se abre por enquanto.")
 		"portrait":
 			zoom_manager.open_zoom("portrait_moon")
 		"sofa_flower":

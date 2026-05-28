@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/core/zoom_manager.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_ui.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/readable_letter_popup.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/symbol_sequence_puzzle.tscn" id="5"]
+[ext_resource type="Texture2D" path="res://art/ui/exit_to_hall.png" id="6"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1")
@@ -59,6 +60,32 @@ text = ""
 [node name="InventoryUI" parent="UILayer" instance=ExtResource("3")]
 
 [node name="ReadableLetterPopup" parent="UILayer" instance=ExtResource("4")]
+
+[node name="ExitToHallButton" type="TextureButton" parent="UILayer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -156.0
+offset_right = 94.0
+offset_bottom = -36.0
+tooltip_text = "Voltar ao corredor"
+mouse_default_cursor_shape = 2
+ignore_texture_size = true
+stretch_mode = 5
+texture_normal = ExtResource("6")
+texture_pressed = ExtResource("6")
+texture_hover = ExtResource("6")
+
+[node name="FadeLayer" type="CanvasLayer" parent="."]
+layer = 25
+
+[node name="FadeRect" type="ColorRect" parent="FadeLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
 
 [node name="PuzzleLayer" type="CanvasLayer" parent="."]
 layer = 30
