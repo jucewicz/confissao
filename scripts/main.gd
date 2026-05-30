@@ -224,6 +224,8 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			zoom_manager.open_zoom("nightstand_top_drawer_open")
 		"nightstand_bottom":
 			zoom_manager.open_zoom("nightstand_bottom_drawer_open")
+		"dining_room_clock":
+			zoom_manager.open_zoom("dining_room_clock")
 
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
@@ -236,6 +238,8 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 		"open_jewelry_puzzle":
 			puzzle.visible = true
 			clear_message()
+		"open_clock_pendulums":
+			zoom_manager.open_zoom("dining_room_clock_pendulums")
 		"pickup_small_key":
 			if Inventory.add_item("item_small_victorian_key"):
 				GameState.set_flag("bedroom_small_key_collected", true)
@@ -246,6 +250,8 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				GameState.set_flag("bedroom_box_letter_collected", true)
 				show_message("Você pegou uma carta selada.")
 			_refresh_jewelry_box_after_pickup()
+		"clock_pendulums_solved":
+			show_message("Os pêndulos se alinharam.")
 
 
 func _on_inventory_item_selected(item_id: String) -> void:
