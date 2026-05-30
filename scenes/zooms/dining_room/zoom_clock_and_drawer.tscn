@@ -28,3 +28,14 @@ text = ""
 script = ExtResource("3")
 interaction_id = "open_clock_pendulums"
 cursor_type = "inspect"
+
+[node name="DrawerInscriptionHotspot" type="Button" parent="."]
+offset_left = 18.0
+offset_top = 820.0
+offset_right = 460.0
+offset_bottom = 1035.0
+mouse_filter = 0
+text = ""
+script = ExtResource("3")
+interaction_id = "open_clock_drawer_inscription"
+cursor_type = "inspect"

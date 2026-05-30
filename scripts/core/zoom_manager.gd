@@ -26,6 +26,7 @@ var zoom_scenes := {
 	"nightstand_bottom_drawer_open": preload("res://scenes/zooms/bedroom/zoom_nightstand_bottom_drawer_open.tscn"),
 	"dining_room_clock": preload("res://scenes/zooms/dining_room/zoom_clock_and_drawer.tscn"),
 	"dining_room_clock_pendulums": preload("res://scenes/zooms/dining_room/zoom_clock_pendulums.tscn"),
+	"dining_room_clock_drawer_inscription": preload("res://scenes/zooms/dining_room/zoom_clock_drawer_inscription.tscn"),
 }
 
 
