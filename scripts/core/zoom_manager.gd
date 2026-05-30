@@ -8,6 +8,8 @@ signal zoom_interaction_requested(interaction_id: String)
 @onready var close_button: Button = $CloseButton
 
 var current_zoom: Node = null
+var current_zoom_id := ""
+var parent_zoom_stack: Array = []
 
 var zoom_scenes := {
 	"portrait_moon": preload("res://scenes/zooms/bedroom/zoom_portrait_moon.tscn"),
@@ -35,15 +37,21 @@ func _ready() -> void:
 	close_button.pressed.connect(close_zoom)
 
 
-func open_zoom(zoom_id: String) -> void:
-	if current_zoom != null:
-		close_zoom(false)
+func open_zoom(zoom_id: String, keep_current_as_parent: bool = false) -> void:
 	if not zoom_scenes.has(zoom_id):
 		push_warning("Zoom nao encontrado: " + zoom_id)
 		return
 
+	var zooms_to_free_after_fade := []
+	if current_zoom != null:
+		if keep_current_as_parent:
+			_push_current_zoom_as_parent()
+		else:
+			zooms_to_free_after_fade = _prepare_current_zoom_tree_for_replacement()
+
 	_set_room_interactables_enabled(false)
 	current_zoom = zoom_scenes[zoom_id].instantiate()
+	current_zoom_id = zoom_id
 	zoom_root.add_child(current_zoom)
 	if current_zoom.has_signal("interaction_requested"):
 		current_zoom.interaction_requested.connect(_on_zoom_interaction_requested)
@@ -52,6 +60,8 @@ func open_zoom(zoom_id: String) -> void:
 	current_zoom.modulate.a = 0.0
 	var tween := create_tween()
 	tween.tween_property(current_zoom, "modulate:a", 1.0, 0.15)
+	if not zooms_to_free_after_fade.is_empty():
+		tween.tween_callback(_free_zoom_nodes.bind(zooms_to_free_after_fade))
 	AudioManager.play_sfx("zoom_open")
 	zoom_opened.emit(zoom_id)
 
@@ -61,21 +71,30 @@ func close_zoom(animated: bool = true) -> void:
 		return
 
 	var zoom_to_close := current_zoom
+	var has_parent_zoom := not parent_zoom_stack.is_empty()
 	current_zoom = null
+	current_zoom_id = ""
 
 	if not animated:
 		zoom_to_close.queue_free()
-		visible = false
-		_set_room_interactables_enabled(true)
+		if has_parent_zoom:
+			_restore_parent_zoom()
+		else:
+			visible = false
+			_set_room_interactables_enabled(true)
 		zoom_closed.emit()
 		return
+
+	if has_parent_zoom:
+		_restore_parent_zoom()
 
 	var tween := create_tween()
 	tween.tween_property(zoom_to_close, "modulate:a", 0.0, 0.12)
 	tween.tween_callback(func() -> void:
 		zoom_to_close.queue_free()
-		visible = false
-		_set_room_interactables_enabled(true)
+		if not has_parent_zoom:
+			visible = false
+			_set_room_interactables_enabled(true)
 		AudioManager.play_sfx("zoom_close")
 		zoom_closed.emit()
 	)
@@ -83,6 +102,51 @@ func close_zoom(animated: bool = true) -> void:
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
 	zoom_interaction_requested.emit(interaction_id)
+
+
+func _push_current_zoom_as_parent() -> void:
+	parent_zoom_stack.append({
+		"id": current_zoom_id,
+		"mouse_filter": current_zoom.mouse_filter,
+		"node": current_zoom,
+	})
+	current_zoom.mouse_filter = Control.MOUSE_FILTER_STOP
+	current_zoom = null
+	current_zoom_id = ""
+
+
+func _restore_parent_zoom() -> void:
+	var parent_zoom: Dictionary = parent_zoom_stack.pop_back()
+	current_zoom = parent_zoom["node"]
+	current_zoom_id = parent_zoom["id"]
+	current_zoom.visible = true
+	current_zoom.modulate.a = 1.0
+	current_zoom.mouse_filter = parent_zoom["mouse_filter"]
+	visible = true
+
+
+func _prepare_current_zoom_tree_for_replacement() -> Array:
+	var zooms_to_free := []
+	_disable_zoom_input(current_zoom)
+	zooms_to_free.append(current_zoom)
+	current_zoom = null
+	current_zoom_id = ""
+	for parent_zoom in parent_zoom_stack:
+		_disable_zoom_input(parent_zoom["node"])
+		zooms_to_free.append(parent_zoom["node"])
+	parent_zoom_stack.clear()
+	return zooms_to_free
+
+
+func _free_zoom_nodes(zoom_nodes: Array) -> void:
+	for zoom_node in zoom_nodes:
+		if is_instance_valid(zoom_node):
+			zoom_node.queue_free()
+
+
+func _disable_zoom_input(zoom_node: Node) -> void:
+	if zoom_node is Control:
+		zoom_node.mouse_filter = Control.MOUSE_FILTER_STOP
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -239,9 +239,9 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			puzzle.visible = true
 			clear_message()
 		"open_clock_pendulums":
-			zoom_manager.open_zoom("dining_room_clock_pendulums")
+			zoom_manager.open_zoom("dining_room_clock_pendulums", true)
 		"open_clock_drawer_inscription":
-			zoom_manager.open_zoom("dining_room_clock_drawer_inscription")
+			zoom_manager.open_zoom("dining_room_clock_drawer_inscription", true)
 		"pickup_small_key":
 			if Inventory.add_item("item_small_victorian_key"):
 				GameState.set_flag("bedroom_small_key_collected", true)
