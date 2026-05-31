@@ -11,6 +11,8 @@ const ROOM_FADE_TIME := 0.25
 @onready var letter_popup: Control = $UILayer/ReadableLetterPopup
 @onready var message_panel: PanelContainer = $UILayer/MessagePanel
 @onready var message_label: Label = $UILayer/MessagePanel/MessageLabel
+@onready var door_hover_panel: PanelContainer = $UILayer/DoorHoverPanel
+@onready var door_hover_label: Label = $UILayer/DoorHoverPanel/DoorHoverLabel
 @onready var exit_to_hall_button: TextureButton = $UILayer/ExitToHallButton
 @onready var fade_rect: ColorRect = $FadeLayer/FadeRect
 @onready var puzzle: Control = $PuzzleLayer/SymbolSequencePuzzle
@@ -25,6 +27,7 @@ var room_scenes := {
 
 var current_room_id := ""
 var hovered_interactables: Dictionary = {}
+var hovered_door_interactable: Node = null
 var message_tween: Tween = null
 var room_transition_tween: Tween = null
 var cursor_shape_by_type := {
@@ -34,6 +37,12 @@ var cursor_shape_by_type := {
 	"inspect": Input.CURSOR_POINTING_HAND,
 	"blocked": Input.CURSOR_FORBIDDEN,
 }
+var hall_door_names := {
+	"go_bedroom": "Quarto",
+	"go_office": "Escritório",
+	"go_library": "Biblioteca",
+	"go_dining_room": "Sala de jantar",
+}
 
 
 func _ready() -> void:
@@ -42,7 +51,7 @@ func _ready() -> void:
 	GameState.reset()
 	Inventory.clear()
 	_setup_room_navigation_ui()
-	go_to_room("hall", false)
+	go_to_room("bedroom", false)
 	zoom_manager.zoom_interaction_requested.connect(_on_zoom_interaction_requested)
 	zoom_manager.zoom_opened.connect(_on_zoom_opened)
 	zoom_manager.zoom_closed.connect(_on_zoom_visibility_changed)
@@ -50,7 +59,7 @@ func _ready() -> void:
 	puzzle.visible = false
 	puzzle.puzzle_solved.connect(_on_jewelry_puzzle_solved)
 	puzzle.puzzle_closed.connect(_close_puzzle)
-	show_message("Escolha uma porta.")
+	show_message("A porta está trancada.")
 
 
 func _process(_delta: float) -> void:
@@ -64,6 +73,8 @@ func _process(_delta: float) -> void:
 		Input.set_default_cursor_shape(_get_active_cursor_shape())
 	else:
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+
+	_update_door_hover_position()
 
 
 func _setup_custom_cursors() -> void:
@@ -80,6 +91,8 @@ func _on_interactable_hover_changed(interactable: Node, is_hovered: bool, cursor
 		hovered_interactables[interactable] = cursor_type
 	else:
 		hovered_interactables.erase(interactable)
+
+	_update_door_hover(interactable, is_hovered)
 
 
 func _prune_hovered_interactables() -> void:
@@ -121,6 +134,8 @@ func _setup_room_navigation_ui() -> void:
 	exit_to_hall_button.mouse_exited.connect(_on_exit_to_hall_hover_changed.bind(false))
 	exit_to_hall_button.visible = false
 	exit_to_hall_button.modulate.a = 0.62
+	door_hover_panel.visible = false
+	door_hover_panel.modulate.a = 0.0
 	fade_rect.visible = true
 	fade_rect.modulate.a = 0.0
 
@@ -156,15 +171,63 @@ func _load_room(room_id: String) -> void:
 
 	current_room_id = room_id
 	hovered_interactables.clear()
+	_hide_door_hover()
 	var room: Node = room_scenes[room_id].instantiate()
 	current_room_container.add_child(room)
 	if room.has_signal("interaction_requested"):
 		room.interaction_requested.connect(_on_room_interaction_requested)
 
 
+func _update_door_hover(interactable: Node, is_hovered: bool) -> void:
+	if current_room_id != "hall":
+		_hide_door_hover()
+		return
+	if not interactable.has_method("is_available") or not interactable.is_available():
+		_hide_door_hover()
+		return
+	var interaction_id_variant: Variant = interactable.get("interaction_id")
+	if not interaction_id_variant is String:
+		return
+
+	var interaction_id: String = interaction_id_variant
+	if not hall_door_names.has(interaction_id):
+		if hovered_door_interactable == interactable:
+			_hide_door_hover()
+		return
+
+	if is_hovered:
+		hovered_door_interactable = interactable
+		door_hover_label.text = hall_door_names[interaction_id]
+		door_hover_panel.visible = true
+		door_hover_panel.modulate.a = 1.0
+		_update_door_hover_position()
+	elif hovered_door_interactable == interactable:
+		_hide_door_hover()
+
+
+func _update_door_hover_position() -> void:
+	if not door_hover_panel.visible:
+		return
+
+	var mouse_position := get_viewport().get_mouse_position()
+	var panel_size := door_hover_panel.size
+	var viewport_size := get_viewport().get_visible_rect().size
+	var position := mouse_position + Vector2(-(panel_size.x / 2.0), -panel_size.y - 24.0)
+	position.x = clamp(position.x, 12.0, viewport_size.x - panel_size.x - 12.0)
+	position.y = clamp(position.y, 12.0, viewport_size.y - panel_size.y - 12.0)
+	door_hover_panel.position = position
+
+
+func _hide_door_hover() -> void:
+	hovered_door_interactable = null
+	if door_hover_panel != null:
+		door_hover_panel.visible = false
+
+
 func _set_exit_to_hall_visible(is_visible: bool) -> void:
 	exit_to_hall_button.visible = is_visible
 	exit_to_hall_button.disabled = not is_visible
+	_update_exit_to_hall_tooltip()
 
 
 func _update_exit_to_hall_visibility() -> void:
@@ -181,12 +244,29 @@ func _on_zoom_opened(_zoom_id: String) -> void:
 
 func _on_exit_to_hall_pressed() -> void:
 	clear_message()
+
+	if current_room_id == "bedroom" and not GameState.get_flag("bedroom_door_unlocked"):
+		if not GameState.get_flag("bedroom_small_key_collected"):
+			show_message("A porta está trancada.")
+			return
+
+		Inventory.remove_item("item_small_victorian_key")
+		GameState.set_flag("bedroom_door_unlocked", true)
+		show_message("A chave gira na fechadura.")
+
 	AudioManager.play_sfx("door")
 	go_to_room("hall")
 
 
 func _on_exit_to_hall_hover_changed(is_hovered: bool) -> void:
 	exit_to_hall_button.modulate.a = 1.0 if is_hovered else 0.62
+
+
+func _update_exit_to_hall_tooltip() -> void:
+	if current_room_id == "bedroom" and not GameState.get_flag("bedroom_door_unlocked"):
+		exit_to_hall_button.tooltip_text = "Porta trancada"
+	else:
+		exit_to_hall_button.tooltip_text = "Voltar ao corredor"
 
 
 func _on_room_interaction_requested(interaction_id: String) -> void:
