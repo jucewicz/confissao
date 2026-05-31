@@ -4,7 +4,6 @@ signal interaction_requested(interaction_id: String)
 
 const LEVELS := ["up", "middle", "down"]
 const INITIAL_STATE := ["middle", "down", "middle"]
-const SOLVED_STATE := ["down", "down", "down"]
 const STATE_KEY := "dining_room_clock_pendulum_state"
 const PENDULUM_SCALE := 0.42
 const PENDULUM_LAYOUTS := [
@@ -130,4 +129,4 @@ func _update_pendulum_visuals() -> void:
 
 
 func _is_solved() -> bool:
-	return state == SOLVED_STATE
+	return state[0] == state[1] and state[1] == state[2]
