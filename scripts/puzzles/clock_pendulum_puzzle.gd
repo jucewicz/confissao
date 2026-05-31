@@ -6,9 +6,35 @@ const LEVELS := ["up", "middle", "down"]
 const INITIAL_STATE := ["middle", "down", "middle"]
 const SOLVED_STATE := ["down", "down", "down"]
 const STATE_KEY := "dining_room_clock_pendulum_state"
-const TEXTURE_PATH := "res://art/zoom_ins/dining_room/clock_pendulums/clock_pendulums_l_%s_c_%s_r_%s.png"
+const PENDULUM_SCALE := 0.42
+const PENDULUM_LAYOUTS := [
+	{"anchor_x": 760.0, "top": 12.0},
+	{"anchor_x": 960.0, "top": 12.0},
+	{"anchor_x": 1125.0, "top": 12.0},
+]
+const PENDULUM_TEXTURES := [
+	{
+		"up": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_left_up.png"),
+		"middle": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_left_middle.png"),
+		"down": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_left_down.png"),
+	},
+	{
+		"up": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_center_up.png"),
+		"middle": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_center_middle.png"),
+		"down": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_center_down.png"),
+	},
+	{
+		"up": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_right_up.png"),
+		"middle": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_right_middle.png"),
+		"down": preload("res://art/zoom_ins/dining_room/clock_pendulum_parts/pendulum_right_down.png"),
+	},
+]
 
-@onready var image: TextureRect = $Image
+@onready var pendulum_sprites := [
+	$PendulumLeft,
+	$PendulumCenter,
+	$PendulumRight,
+]
 @onready var left_hotspot: UIInteractable = $LeftPendulumHotspot
 @onready var center_hotspot: UIInteractable = $CenterPendulumHotspot
 @onready var right_hotspot: UIInteractable = $RightPendulumHotspot
@@ -21,7 +47,7 @@ func _ready() -> void:
 	left_hotspot.interacted.connect(_on_pendulum_interacted)
 	center_hotspot.interacted.connect(_on_pendulum_interacted)
 	right_hotspot.interacted.connect(_on_pendulum_interacted)
-	_update_texture()
+	_update_pendulum_visuals()
 
 
 func _load_state() -> Array:
@@ -52,7 +78,7 @@ func _on_pendulum_interacted(interaction_id: String) -> void:
 			_descend(2)
 
 	_save_state()
-	_update_texture()
+	_update_pendulum_visuals()
 
 	if _is_solved():
 		GameState.set_flag("dining_room_clock_pendulums_solved", true)
@@ -90,9 +116,17 @@ func _save_state() -> void:
 	GameState.set_value(STATE_KEY, state.duplicate())
 
 
-func _update_texture() -> void:
-	var texture_path := TEXTURE_PATH % [state[0], state[1], state[2]]
-	image.texture = load(texture_path)
+func _update_pendulum_visuals() -> void:
+	for index in range(pendulum_sprites.size()):
+		var level: String = state[index]
+		var texture: Texture2D = PENDULUM_TEXTURES[index][level]
+		var layout: Dictionary = PENDULUM_LAYOUTS[index]
+		var size := Vector2(texture.get_width(), texture.get_height()) * PENDULUM_SCALE
+		var sprite: TextureRect = pendulum_sprites[index]
+		sprite.texture = texture
+		sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		sprite.position = Vector2(layout["anchor_x"] - (size.x / 2.0), layout["top"])
+		sprite.size = size
 
 
 func _is_solved() -> bool:
