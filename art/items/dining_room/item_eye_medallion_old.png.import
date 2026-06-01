@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7ajo6t5uaenr"
-path="res://.godot/imported/safe_open_son.png-993cf1c5519a709e83310d2d078b0aba.ctex"
+uid="uid://bxiumivsfoqir"
+path="res://.godot/imported/item_eye_medallion_old.png-bfa99395aeee17ded5c209a27b76faf7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/zoom_ins/office/safe_open_son.png"
-dest_files=["res://.godot/imported/safe_open_son.png-993cf1c5519a709e83310d2d078b0aba.ctex"]
+source_file="res://art/items/dining_room/item_eye_medallion_old.png"
+dest_files=["res://.godot/imported/item_eye_medallion_old.png-bfa99395aeee17ded5c209a27b76faf7.ctex"]
 
 [params]
 

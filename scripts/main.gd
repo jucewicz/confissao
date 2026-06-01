@@ -16,6 +16,9 @@ const ROOM_FADE_TIME := 0.25
 @onready var exit_to_hall_button: TextureButton = $UILayer/ExitToHallButton
 @onready var fade_rect: ColorRect = $FadeLayer/FadeRect
 @onready var puzzle: Control = $PuzzleLayer/SymbolSequencePuzzle
+@onready var main_menu: Control = $MenuLayer/MainMenu
+@onready var pause_menu: Control = $MenuLayer/PauseMenu
+@onready var victory_menu: Control = $MenuLayer/VictoryMenu
 
 var room_scenes := {
 	"hall": preload("res://scenes/rooms/hall/hall_main.tscn"),
@@ -30,6 +33,9 @@ var hovered_interactables: Dictionary = {}
 var hovered_door_interactable: Node = null
 var message_tween: Tween = null
 var room_transition_tween: Tween = null
+var has_started_game := false
+var has_won_game := false
+var menu_transition_running := false
 var cursor_shape_by_type := {
 	"interact": Input.CURSOR_POINTING_HAND,
 	"pickup": Input.CURSOR_CAN_DROP,
@@ -46,11 +52,13 @@ var hall_door_names := {
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("cursor_listeners")
 	_setup_custom_cursors()
 	GameState.reset()
 	Inventory.clear()
 	_setup_room_navigation_ui()
+	_setup_menus()
 	go_to_room("bedroom", false)
 	zoom_manager.zoom_interaction_requested.connect(_on_zoom_interaction_requested)
 	zoom_manager.zoom_opened.connect(_on_zoom_opened)
@@ -59,10 +67,14 @@ func _ready() -> void:
 	puzzle.visible = false
 	puzzle.puzzle_solved.connect(_on_jewelry_puzzle_solved)
 	puzzle.puzzle_closed.connect(_close_puzzle)
-	show_message("A porta está trancada.")
+	_show_main_menu()
 
 
 func _process(_delta: float) -> void:
+	if main_menu.visible or pause_menu.visible or victory_menu.visible:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		return
+
 	var hovered_ui_cursor := _get_hovered_ui_cursor_shape()
 	if hovered_ui_cursor != -1:
 		Input.set_default_cursor_shape(hovered_ui_cursor)
@@ -75,6 +87,25 @@ func _process(_delta: float) -> void:
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 	_update_door_hover_position()
+
+
+func _input(event: InputEvent) -> void:
+	if not event.is_action_pressed("pause"):
+		return
+	if menu_transition_running:
+		get_viewport().set_input_as_handled()
+		return
+	if main_menu.visible:
+		get_viewport().set_input_as_handled()
+		return
+	if victory_menu.visible:
+		get_viewport().set_input_as_handled()
+		return
+	if pause_menu.visible:
+		_resume_game()
+	else:
+		_open_pause_menu()
+	get_viewport().set_input_as_handled()
 
 
 func _setup_custom_cursors() -> void:
@@ -138,6 +169,79 @@ func _setup_room_navigation_ui() -> void:
 	door_hover_panel.modulate.a = 0.0
 	fade_rect.visible = true
 	fade_rect.modulate.a = 0.0
+
+
+func _setup_menus() -> void:
+	main_menu.start_requested.connect(_start_new_game)
+	main_menu.resume_requested.connect(_resume_game)
+	main_menu.quit_requested.connect(_quit_game)
+	pause_menu.resume_requested.connect(_resume_game)
+	pause_menu.main_menu_requested.connect(_return_to_main_menu)
+	pause_menu.quit_requested.connect(_quit_game)
+	victory_menu.main_menu_requested.connect(_return_to_main_menu)
+	victory_menu.quit_requested.connect(_quit_game)
+
+
+func _show_main_menu() -> void:
+	clear_message()
+	get_tree().paused = true
+	main_menu.set_resume_enabled(has_started_game)
+	main_menu.open()
+	pause_menu.close()
+	victory_menu.close()
+
+
+func _start_new_game() -> void:
+	if menu_transition_running:
+		return
+	menu_transition_running = true
+	has_started_game = true
+	has_won_game = false
+	pause_menu.close()
+	victory_menu.close()
+	GameState.reset()
+	Inventory.clear()
+	letter_popup.close()
+	_close_puzzle()
+	zoom_manager.close_zoom(false)
+	go_to_room("bedroom", false)
+	await main_menu.fade_out()
+	get_tree().paused = false
+	menu_transition_running = false
+	show_message("A porta está trancada.")
+
+
+func _open_pause_menu() -> void:
+	if menu_transition_running or has_won_game:
+		return
+	clear_message()
+	get_tree().paused = true
+	pause_menu.open()
+
+
+func _resume_game() -> void:
+	if menu_transition_running:
+		return
+	menu_transition_running = true
+	if main_menu.visible:
+		await main_menu.fade_out()
+	if pause_menu.visible:
+		await pause_menu.fade_out()
+	if victory_menu.visible:
+		await victory_menu.fade_out()
+	get_tree().paused = false
+	menu_transition_running = false
+
+
+func _return_to_main_menu() -> void:
+	if menu_transition_running:
+		return
+	has_started_game = false
+	_show_main_menu()
+
+
+func _quit_game() -> void:
+	get_tree().quit()
 
 
 func go_to_room(room_id: String, animated: bool = true) -> void:
@@ -305,7 +409,7 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 		"nightstand_bottom":
 			zoom_manager.open_zoom("nightstand_bottom_drawer_open")
 		"dining_room_clock":
-			zoom_manager.open_zoom("dining_room_clock")
+			_open_dining_room_clock_zoom()
 
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
@@ -326,14 +430,26 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			if Inventory.add_item("item_small_victorian_key"):
 				GameState.set_flag("bedroom_small_key_collected", true)
 				show_message("Você pegou uma pequena chave.")
+				if _check_victory_condition():
+					return
 			_refresh_jewelry_box_after_pickup()
 		"pickup_box_letter":
 			if Inventory.add_item("item_box_letter"):
 				GameState.set_flag("bedroom_box_letter_collected", true)
 				show_message("Você pegou uma carta selada.")
+				if _check_victory_condition():
+					return
 			_refresh_jewelry_box_after_pickup()
 		"clock_pendulums_solved":
 			show_message("Os pêndulos se alinharam.")
+			_open_dining_room_clock_zoom()
+		"pickup_eye_medallion":
+			if Inventory.add_item("item_eye_medallion"):
+				GameState.set_flag("dining_room_eye_medallion_collected", true)
+				show_message("Você pegou o medalhão do olho fechado.")
+				if _check_victory_condition():
+					return
+			_open_dining_room_clock_zoom()
 
 
 func _on_inventory_item_selected(item_id: String) -> void:
@@ -382,12 +498,51 @@ func _refresh_jewelry_box_after_pickup() -> void:
 	_open_jewelry_box_zoom()
 
 
+func _open_dining_room_clock_zoom() -> void:
+	if not GameState.get_flag("dining_room_clock_pendulums_solved"):
+		zoom_manager.open_zoom("dining_room_clock")
+		return
+
+	if GameState.get_flag("dining_room_eye_medallion_collected"):
+		zoom_manager.open_zoom("dining_room_clock_open_without_eye_medallion")
+	else:
+		zoom_manager.open_zoom("dining_room_clock_open_with_eye_medallion")
+
+
 func _is_jewelry_box_empty() -> bool:
 	return (
 		GameState.get_flag("bedroom_jewelry_box_solved")
 		and GameState.get_flag("bedroom_small_key_collected")
 		and GameState.get_flag("bedroom_box_letter_collected")
 	)
+
+
+func _check_victory_condition() -> bool:
+	if has_won_game:
+		return true
+
+	if (
+		GameState.get_flag("bedroom_small_key_collected")
+		and GameState.get_flag("bedroom_box_letter_collected")
+		and GameState.get_flag("dining_room_eye_medallion_collected")
+	):
+		_show_victory_screen()
+		return true
+
+	return false
+
+
+func _show_victory_screen() -> void:
+	has_won_game = true
+	has_started_game = false
+	clear_message()
+	_close_puzzle()
+	letter_popup.close()
+	zoom_manager.close_zoom(false)
+	get_tree().paused = true
+	main_menu.close()
+	pause_menu.close()
+	victory_menu.open()
 
 
 func show_message(text: String) -> void:

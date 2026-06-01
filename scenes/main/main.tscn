@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/core/zoom_manager.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/readable_letter_popup.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/symbol_sequence_puzzle.tscn" id="5"]
 [ext_resource type="Texture2D" path="res://art/ui/exit_to_hall.png" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_menu.tscn" id="7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_door_hover"]
 content_margin_left = 18.0
@@ -125,3 +126,14 @@ color = Color(0, 0, 0, 1)
 layer = 30
 
 [node name="SymbolSequencePuzzle" parent="PuzzleLayer" instance=ExtResource("5")]
+
+[node name="MenuLayer" type="CanvasLayer" parent="."]
+layer = 40
+
+[node name="MainMenu" parent="MenuLayer" instance=ExtResource("7")]
+
+[node name="PauseMenu" parent="MenuLayer" instance=ExtResource("7")]
+menu_mode = "pause"
+
+[node name="VictoryMenu" parent="MenuLayer" instance=ExtResource("7")]
+menu_mode = "victory"

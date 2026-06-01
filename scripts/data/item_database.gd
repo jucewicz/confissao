@@ -24,6 +24,13 @@ const ITEMS := {
 		"region": Rect2(130, 310, 1000, 585),
 		"type": "readable",
 		"text": "Ele nunca confiou nas fechaduras grandes.\n\nGuardava o que importava onde ninguém pensaria em procurar:\nnão atrás da porta,\nmas dentro daquilo que registra seus pecados.\n\nA chave pequena pertence ao silêncio da escrivaninha."
+	},
+	"item_eye_medallion": {
+		"name": "Medalhão do olho fechado",
+		"description": "Um medalhão antigo de metal escurecido, gravado com um olho fechado.",
+		"icon": "res://art/items/dining_room/item_eye_medallion.png",
+		"type": "inspectable",
+		"text": ""
 	}
 }
 
