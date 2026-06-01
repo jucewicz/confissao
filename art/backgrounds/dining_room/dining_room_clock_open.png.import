@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dpg7ilmnq1lvx"
-path="res://.godot/imported/zoom_jewelry_box_only_key.png-a9a0f04a08aacbd41d8e21583e2bd744.ctex"
+uid="uid://b707dm5ce6vc0"
+path="res://.godot/imported/dining_room_clock_open.png-69c837965cf18bc07133e4feb0811799.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/asset_backups/jewelry_box_zoom_originals/zoom_jewelry_box_only_key.png"
-dest_files=["res://.godot/imported/zoom_jewelry_box_only_key.png-a9a0f04a08aacbd41d8e21583e2bd744.ctex"]
+source_file="res://art/backgrounds/dining_room/dining_room_clock_open.png"
+dest_files=["res://.godot/imported/dining_room_clock_open.png-69c837965cf18bc07133e4feb0811799.ctex"]
 
 [params]
 

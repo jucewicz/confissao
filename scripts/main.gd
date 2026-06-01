@@ -236,7 +236,8 @@ func _resume_game() -> void:
 func _return_to_main_menu() -> void:
 	if menu_transition_running:
 		return
-	has_started_game = false
+	if has_won_game:
+		has_started_game = false
 	_show_main_menu()
 
 
@@ -442,11 +443,13 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			_refresh_jewelry_box_after_pickup()
 		"clock_pendulums_solved":
 			show_message("Os pêndulos se alinharam.")
+			_refresh_current_room_state_visuals()
 			_open_dining_room_clock_zoom()
 		"pickup_eye_medallion":
 			if Inventory.add_item("item_eye_medallion"):
 				GameState.set_flag("dining_room_eye_medallion_collected", true)
 				show_message("Você pegou o medalhão do olho fechado.")
+				_refresh_current_room_state_visuals()
 				if _check_victory_condition():
 					return
 			_open_dining_room_clock_zoom()
@@ -496,6 +499,12 @@ func _open_jewelry_box_zoom() -> void:
 
 func _refresh_jewelry_box_after_pickup() -> void:
 	_open_jewelry_box_zoom()
+
+
+func _refresh_current_room_state_visuals() -> void:
+	for child in current_room_container.get_children():
+		if child.has_method("refresh_state_visuals"):
+			child.refresh_state_visuals()
 
 
 func _open_dining_room_clock_zoom() -> void:
