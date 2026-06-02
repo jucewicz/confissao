@@ -29,6 +29,7 @@ func _ready() -> void:
 
 	for symbol_id in SYMBOL_LABELS.keys():
 		var button := get_node("Panel/MarginContainer/Layout/SymbolGrid/%sButton" % symbol_id.capitalize())
+		button.mouse_default_cursor_shape = Control.CURSOR_DRAG
 		button.pressed.connect(press_symbol.bind(symbol_id))
 
 	_update_preview()

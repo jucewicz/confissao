@@ -1,9 +1,10 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Texture2D" path="res://art/backgrounds/office/office.png" id="1"]
+[ext_resource type="Texture2D" path="res://art/backgrounds/office/office_new.png" id="1"]
 
 [node name="OfficeMain" type="Node2D"]
 
 [node name="Background" type="Sprite2D" parent="."]
 position = Vector2(960, 540)
+scale = Vector2(1.14833, 1.14772)
 texture = ExtResource("1")

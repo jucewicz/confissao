@@ -4,6 +4,12 @@ const ItemDatabase := preload("res://scripts/data/item_database.gd")
 const MESSAGE_VISIBLE_TIME := 2.4
 const MESSAGE_FADE_TIME := 0.45
 const ROOM_FADE_TIME := 0.25
+const EXIT_TO_HALL_IDLE_ALPHA := 0.92
+const EXIT_TO_HALL_HOVER_ALPHA := 1.0
+const EXIT_TO_HALL_BACKDROP_IDLE_ALPHA := 0.88
+const EXIT_TO_HALL_BACKDROP_HOVER_ALPHA := 1.0
+const EXIT_TO_HALL_BUTTON_RECT := Rect2(22.0, -198.0, 100.0, 176.0)
+const EXIT_TO_HALL_BACKDROP_RECT := Rect2(10.0, -212.0, 126.0, 202.0)
 
 @onready var current_room_container: Node = $CurrentRoomContainer
 @onready var zoom_manager: Control = $ZoomLayer/ZoomManager
@@ -31,6 +37,7 @@ var room_scenes := {
 var current_room_id := ""
 var hovered_interactables: Dictionary = {}
 var hovered_door_interactable: Node = null
+var exit_to_hall_backdrop: Panel = null
 var message_tween: Tween = null
 var room_transition_tween: Tween = null
 var has_started_game := false
@@ -40,7 +47,7 @@ var cursor_shape_by_type := {
 	"interact": Input.CURSOR_POINTING_HAND,
 	"pickup": Input.CURSOR_CAN_DROP,
 	"grab": Input.CURSOR_DRAG,
-	"inspect": Input.CURSOR_POINTING_HAND,
+	"inspect": Input.CURSOR_HELP,
 	"blocked": Input.CURSOR_FORBIDDEN,
 }
 var hall_door_names := {
@@ -110,10 +117,11 @@ func _input(event: InputEvent) -> void:
 
 func _setup_custom_cursors() -> void:
 	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_default.png"), Input.CURSOR_ARROW, Vector2(28, 10))
-	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_interact.png"), Input.CURSOR_POINTING_HAND, Vector2(28, 10))
-	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_grab.png"), Input.CURSOR_DRAG, Vector2(30, 16))
-	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_pickup.png"), Input.CURSOR_CAN_DROP, Vector2(30, 16))
-	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_blocked.png"), Input.CURSOR_FORBIDDEN, Vector2(28, 10))
+	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_default.png"), Input.CURSOR_POINTING_HAND, Vector2(28, 10))
+	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_inspect.png"), Input.CURSOR_HELP, Vector2(48, 48))
+	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_grab.png"), Input.CURSOR_DRAG, Vector2(48, 48))
+	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_pickup.png"), Input.CURSOR_CAN_DROP, Vector2(48, 48))
+	Input.set_custom_mouse_cursor(load("res://art/cursors/cursor_blocked.png"), Input.CURSOR_FORBIDDEN, Vector2(48, 48))
 	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
@@ -139,36 +147,95 @@ func _prune_hovered_interactables() -> void:
 
 
 func _get_active_cursor_shape() -> int:
+	return cursor_shape_by_type[_get_active_cursor_type()]
+
+
+func _get_active_cursor_type() -> String:
 	if "pickup" in hovered_interactables.values():
-		return cursor_shape_by_type["pickup"]
+		return "pickup"
 	if "grab" in hovered_interactables.values():
-		return cursor_shape_by_type["grab"]
+		return "grab"
 	if "blocked" in hovered_interactables.values():
-		return cursor_shape_by_type["blocked"]
-	return cursor_shape_by_type["interact"]
+		return "blocked"
+	if "inspect" in hovered_interactables.values():
+		return "inspect"
+	return "interact"
 
 
 func _get_hovered_ui_cursor_shape() -> int:
+	var cursor_type := _get_hovered_ui_cursor_type()
+	if cursor_type == "":
+		return -1
+	if cursor_type == "unavailable":
+		return Input.CURSOR_ARROW
+	return cursor_shape_by_type.get(cursor_type, Input.CURSOR_POINTING_HAND)
+
+
+func _get_hovered_ui_cursor_type() -> String:
 	var hovered_control := get_viewport().gui_get_hovered_control()
 	while hovered_control != null:
-		if hovered_control.has_method("is_available") and hovered_control.has_method("_get_control_cursor_shape"):
+		if hovered_control.has_method("is_available"):
 			if hovered_control.is_available():
-				return hovered_control._get_control_cursor_shape()
-			return Input.CURSOR_ARROW
+				var cursor_type_variant: Variant = hovered_control.get("cursor_type")
+				if cursor_type_variant is String and cursor_shape_by_type.has(cursor_type_variant):
+					return cursor_type_variant
+				return "interact"
+			return "unavailable"
 		hovered_control = hovered_control.get_parent() as Control
-	return -1
+	return ""
 
 
 func _setup_room_navigation_ui() -> void:
+	_setup_exit_to_hall_visuals()
 	exit_to_hall_button.pressed.connect(_on_exit_to_hall_pressed)
 	exit_to_hall_button.mouse_entered.connect(_on_exit_to_hall_hover_changed.bind(true))
 	exit_to_hall_button.mouse_exited.connect(_on_exit_to_hall_hover_changed.bind(false))
 	exit_to_hall_button.visible = false
-	exit_to_hall_button.modulate.a = 0.62
+	exit_to_hall_button.modulate.a = EXIT_TO_HALL_IDLE_ALPHA
+	exit_to_hall_backdrop.visible = false
+	exit_to_hall_backdrop.modulate.a = EXIT_TO_HALL_BACKDROP_IDLE_ALPHA
 	door_hover_panel.visible = false
 	door_hover_panel.modulate.a = 0.0
 	fade_rect.visible = true
 	fade_rect.modulate.a = 0.0
+
+
+func _setup_exit_to_hall_visuals() -> void:
+	exit_to_hall_button.offset_left = EXIT_TO_HALL_BUTTON_RECT.position.x
+	exit_to_hall_button.offset_top = EXIT_TO_HALL_BUTTON_RECT.position.y
+	exit_to_hall_button.offset_right = EXIT_TO_HALL_BUTTON_RECT.position.x + EXIT_TO_HALL_BUTTON_RECT.size.x
+	exit_to_hall_button.offset_bottom = EXIT_TO_HALL_BUTTON_RECT.position.y + EXIT_TO_HALL_BUTTON_RECT.size.y
+
+	exit_to_hall_backdrop = Panel.new()
+	exit_to_hall_backdrop.name = "ExitToHallBackdrop"
+	exit_to_hall_backdrop.visible = false
+	exit_to_hall_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	exit_to_hall_backdrop.anchors_preset = Control.PRESET_BOTTOM_LEFT
+	exit_to_hall_backdrop.anchor_top = 1.0
+	exit_to_hall_backdrop.anchor_bottom = 1.0
+	exit_to_hall_backdrop.offset_left = EXIT_TO_HALL_BACKDROP_RECT.position.x
+	exit_to_hall_backdrop.offset_top = EXIT_TO_HALL_BACKDROP_RECT.position.y
+	exit_to_hall_backdrop.offset_right = EXIT_TO_HALL_BACKDROP_RECT.position.x + EXIT_TO_HALL_BACKDROP_RECT.size.x
+	exit_to_hall_backdrop.offset_bottom = EXIT_TO_HALL_BACKDROP_RECT.position.y + EXIT_TO_HALL_BACKDROP_RECT.size.y
+
+	var backdrop_style := StyleBoxFlat.new()
+	backdrop_style.bg_color = Color(0.045, 0.034, 0.026, 0.66)
+	backdrop_style.border_color = Color(0.9, 0.58, 0.2, 0.9)
+	backdrop_style.border_width_left = 2
+	backdrop_style.border_width_top = 2
+	backdrop_style.border_width_right = 2
+	backdrop_style.border_width_bottom = 2
+	backdrop_style.corner_radius_top_left = 7
+	backdrop_style.corner_radius_top_right = 7
+	backdrop_style.corner_radius_bottom_right = 7
+	backdrop_style.corner_radius_bottom_left = 7
+	backdrop_style.shadow_color = Color(0, 0, 0, 0.62)
+	backdrop_style.shadow_size = 14
+	exit_to_hall_backdrop.add_theme_stylebox_override("panel", backdrop_style)
+
+	var ui_layer := exit_to_hall_button.get_parent()
+	ui_layer.add_child(exit_to_hall_backdrop)
+	ui_layer.move_child(exit_to_hall_backdrop, exit_to_hall_button.get_index())
 
 
 func _setup_menus() -> void:
@@ -332,6 +399,8 @@ func _hide_door_hover() -> void:
 func _set_exit_to_hall_visible(is_visible: bool) -> void:
 	exit_to_hall_button.visible = is_visible
 	exit_to_hall_button.disabled = not is_visible
+	if exit_to_hall_backdrop != null:
+		exit_to_hall_backdrop.visible = is_visible
 	_update_exit_to_hall_tooltip()
 
 
@@ -364,7 +433,9 @@ func _on_exit_to_hall_pressed() -> void:
 
 
 func _on_exit_to_hall_hover_changed(is_hovered: bool) -> void:
-	exit_to_hall_button.modulate.a = 1.0 if is_hovered else 0.62
+	exit_to_hall_button.modulate.a = EXIT_TO_HALL_HOVER_ALPHA if is_hovered else EXIT_TO_HALL_IDLE_ALPHA
+	if exit_to_hall_backdrop != null:
+		exit_to_hall_backdrop.modulate.a = EXIT_TO_HALL_BACKDROP_HOVER_ALPHA if is_hovered else EXIT_TO_HALL_BACKDROP_IDLE_ALPHA
 
 
 func _update_exit_to_hall_tooltip() -> void:

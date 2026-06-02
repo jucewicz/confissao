@@ -51,6 +51,7 @@ func _create_slot_button(slot_index: int) -> TextureButton:
 		var item_id: String = Inventory.items[slot_index]
 		var item_data := ItemDatabase.get_item(item_id)
 		button.tooltip_text = item_data.get("name", item_id)
+		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.pressed.connect(_on_slot_pressed.bind(slot_index, item_id))
 		button.add_child(_create_item_icon(item_id))
 

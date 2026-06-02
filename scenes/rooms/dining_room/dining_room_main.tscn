@@ -29,6 +29,7 @@ texture = ExtResource("2")
 position = Vector2(64, 430)
 script = ExtResource("3")
 interaction_id = "dining_room_clock"
+cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/ClockHotspot"]
 shape = SubResource("RectangleShape2D_clock")
@@ -37,6 +38,7 @@ shape = SubResource("RectangleShape2D_clock")
 position = Vector2(260, 595)
 script = ExtResource("3")
 interaction_id = "dining_room_clock"
+cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/CabinetDrawersHotspot"]
 shape = SubResource("RectangleShape2D_cabinet_drawers")
@@ -45,6 +47,7 @@ shape = SubResource("RectangleShape2D_cabinet_drawers")
 position = Vector2(260, 345)
 script = ExtResource("3")
 interaction_id = "dining_room_clock"
+cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/CabinetDisplayHotspot"]
 shape = SubResource("RectangleShape2D_cabinet_display")

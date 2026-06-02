@@ -49,6 +49,8 @@ func _get_control_cursor_shape() -> Control.CursorShape:
 			return Control.CURSOR_CAN_DROP
 		"grab":
 			return Control.CURSOR_DRAG
+		"inspect":
+			return Control.CURSOR_HELP
 		"blocked":
 			return Control.CURSOR_FORBIDDEN
 		_:
