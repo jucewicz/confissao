@@ -1,6 +1,72 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/puzzles/symbol_sequence_puzzle.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_puzzle_panel"]
+content_margin_left = 30.0
+content_margin_top = 26.0
+content_margin_right = 30.0
+content_margin_bottom = 26.0
+bg_color = Color(0.045, 0.034, 0.027, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.42, 0.19, 0.88)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_symbol_normal"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.095, 0.071, 0.049, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.29, 0.15, 0.8)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_symbol_hover"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.13, 0.095, 0.06, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.55, 0.26, 0.94)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_symbol_pressed"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.055, 0.041, 0.032, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34, 0.23, 0.12, 0.92)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [node name="SymbolSequencePuzzle" type="Control"]
 anchors_preset = 15
@@ -13,7 +79,7 @@ script = ExtResource("1")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.72)
+color = Color(0, 0, 0, 0.78)
 
 [node name="Panel" type="PanelContainer" parent="."]
 anchors_preset = 8
@@ -25,6 +91,7 @@ offset_left = -420.0
 offset_top = -280.0
 offset_right = 420.0
 offset_bottom = 280.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_puzzle_panel")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel"]
 theme_override_constants/margin_left = 28
@@ -33,23 +100,39 @@ theme_override_constants/margin_right = 28
 theme_override_constants/margin_bottom = 24
 
 [node name="Layout" type="VBoxContainer" parent="Panel/MarginContainer"]
-theme_override_constants/separation = 18
+theme_override_constants/separation = 20
 
 [node name="TopRow" type="HBoxContainer" parent="Panel/MarginContainer/Layout"]
 
 [node name="TitleLabel" type="Label" parent="Panel/MarginContainer/Layout/TopRow"]
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9, 0.76, 0.53, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.92)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 32
 text = "Caixa de Joias"
 
 [node name="CloseButton" type="Button" parent="Panel/MarginContainer/Layout/TopRow"]
 custom_minimum_size = Vector2(44, 44)
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.86, 0.72, 0.52, 1)
+theme_override_colors/font_hover_color = Color(0.98, 0.86, 0.66, 1)
+theme_override_colors/font_pressed_color = Color(0.72, 0.57, 0.4, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "X"
 
 [node name="PreviewLabel" type="Label" parent="Panel/MarginContainer/Layout"]
 horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.96, 0.84, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 28
-text = "_ -> _ -> _ -> _"
+text = "_ → _ → _ → _"
 
 [node name="SymbolGrid" type="GridContainer" parent="Panel/MarginContainer/Layout"]
 columns = 3
@@ -58,36 +141,76 @@ theme_override_constants/v_separation = 16
 
 [node name="BirdButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
+mouse_default_cursor_shape = 6
+theme_override_colors/font_color = Color(0.86, 0.74, 0.58, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Pássaro"
 
 [node name="CrownButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
+mouse_default_cursor_shape = 6
+theme_override_colors/font_color = Color(0.86, 0.74, 0.58, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Coroa"
 
 [node name="MoonButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
+mouse_default_cursor_shape = 6
+theme_override_colors/font_color = Color(0.86, 0.74, 0.58, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Lua"
 
 [node name="StarButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
+mouse_default_cursor_shape = 6
+theme_override_colors/font_color = Color(0.86, 0.74, 0.58, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Estrela"
 
 [node name="KeyButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
+mouse_default_cursor_shape = 6
+theme_override_colors/font_color = Color(0.86, 0.74, 0.58, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Chave"
 
 [node name="FlowerButton" type="Button" parent="Panel/MarginContainer/Layout/SymbolGrid"]
 custom_minimum_size = Vector2(240, 82)
+mouse_default_cursor_shape = 6
+theme_override_colors/font_color = Color(0.86, 0.74, 0.58, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Flor"
 
 [node name="MessageLabel" type="Label" parent="Panel/MarginContainer/Layout"]
 horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.86, 0.72, 0.52, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 22
 text = ""
 
@@ -96,4 +219,12 @@ alignment = 1
 
 [node name="ClearButton" type="Button" parent="Panel/MarginContainer/Layout/BottomRow"]
 custom_minimum_size = Vector2(180, 48)
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.86, 0.72, 0.52, 1)
+theme_override_colors/font_hover_color = Color(0.98, 0.86, 0.66, 1)
+theme_override_colors/font_pressed_color = Color(0.72, 0.57, 0.4, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_symbol_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_symbol_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_symbol_pressed")
 text = "Limpar"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/core/zoom_manager.gd" id="2"]
@@ -23,6 +23,24 @@ corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_message_panel"]
+content_margin_left = 24.0
+content_margin_top = 10.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+bg_color = Color(0.045, 0.034, 0.027, 0.86)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58, 0.39, 0.18, 0.82)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0, 0, 0, 0.52)
+shadow_size = 12
 
 [node name="Main" type="Node"]
 script = ExtResource("1")
@@ -51,11 +69,13 @@ anchor_left = 1.0
 anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 0.0
-offset_left = -150.0
+offset_left = -180.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 72.0
-text = "Voltar"
+offset_bottom = 76.0
+tooltip_text = "Sair do zoom (Esc)"
+mouse_default_cursor_shape = 2
+text = "← Voltar"
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 layer = 20
@@ -63,14 +83,19 @@ layer = 20
 [node name="MessagePanel" type="PanelContainer" parent="UILayer"]
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 360.0
-offset_top = 18.0
-offset_right = -360.0
-offset_bottom = 72.0
+offset_left = 430.0
+offset_top = 20.0
+offset_right = -430.0
+offset_bottom = 78.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_message_panel")
 
 [node name="MessageLabel" type="Label" parent="UILayer/MessagePanel"]
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_colors/font_color = Color(0.9, 0.78, 0.58, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 22
 text = ""
 

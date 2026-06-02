@@ -434,6 +434,7 @@ func _on_exit_to_hall_pressed() -> void:
 	if current_room_id == "bedroom" and not GameState.get_flag("bedroom_door_unlocked"):
 		if not GameState.get_flag("bedroom_small_key_collected"):
 			show_message("A porta está trancada.")
+			AudioManager.play_sfx("blocked")
 			_play_exit_to_hall_blocked_shake()
 			return
 		if _has_selected_inventory_item() and _get_selected_inventory_item_id() != "item_small_victorian_key":
@@ -480,6 +481,7 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			go_to_room("dining_room")
 		"go_center_locked":
 			show_message(FEEDBACK_DOES_NOT_OPEN_HERE)
+			AudioManager.play_sfx("blocked")
 			_play_current_room_blocked_shake()
 		"portrait":
 			zoom_manager.open_zoom("portrait_moon")
@@ -510,6 +512,7 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			_open_dining_room_clock_zoom()
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
+			AudioManager.play_sfx("invalid")
 
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
@@ -558,6 +561,7 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			_open_dining_room_clock_zoom(false)
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
+			AudioManager.play_sfx("invalid")
 
 
 func _on_inventory_item_selected(item_id: String) -> void:
@@ -675,6 +679,7 @@ func _can_selected_item_handle_zoom_interaction(interaction_id: String) -> bool:
 
 func _show_wrong_selected_item_feedback() -> void:
 	show_message(FEEDBACK_WRONG_ITEM)
+	AudioManager.play_sfx("wrong_item")
 	_clear_selected_inventory_item()
 
 

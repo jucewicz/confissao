@@ -83,7 +83,7 @@ func _update_preview() -> void:
 	while labels.size() < CORRECT_SEQUENCE.size():
 		labels.append("_")
 
-	preview_label.text = " -> ".join(labels)
+	preview_label.text = " → ".join(labels)
 
 
 func _play_error_shake() -> void:

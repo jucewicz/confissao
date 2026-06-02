@@ -36,6 +36,7 @@ var zoom_scenes := {
 
 func _ready() -> void:
 	visible = false
+	_setup_close_button_style()
 	close_button.pressed.connect(close_zoom)
 
 
@@ -104,6 +105,46 @@ func close_zoom(animated: bool = true) -> void:
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
 	zoom_interaction_requested.emit(interaction_id)
+
+
+func _setup_close_button_style() -> void:
+	close_button.text = "← Voltar"
+	close_button.tooltip_text = "Sair do zoom (Esc)"
+	close_button.custom_minimum_size = Vector2(156.0, 52.0)
+	close_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	close_button.add_theme_font_size_override("font_size", 21)
+	close_button.add_theme_color_override("font_color", Color(0.86, 0.74, 0.57, 1.0))
+	close_button.add_theme_color_override("font_hover_color", Color(0.98, 0.86, 0.66, 1.0))
+	close_button.add_theme_color_override("font_pressed_color", Color(0.72, 0.57, 0.40, 1.0))
+
+	var normal_style := StyleBoxFlat.new()
+	normal_style.content_margin_left = 16.0
+	normal_style.content_margin_right = 16.0
+	normal_style.content_margin_top = 9.0
+	normal_style.content_margin_bottom = 9.0
+	normal_style.bg_color = Color(0.055, 0.043, 0.035, 0.78)
+	normal_style.border_width_left = 1
+	normal_style.border_width_top = 1
+	normal_style.border_width_right = 1
+	normal_style.border_width_bottom = 1
+	normal_style.border_color = Color(0.45, 0.31, 0.17, 0.72)
+	normal_style.corner_radius_top_left = 4
+	normal_style.corner_radius_top_right = 4
+	normal_style.corner_radius_bottom_right = 4
+	normal_style.corner_radius_bottom_left = 4
+
+	var hover_style := normal_style.duplicate()
+	hover_style.bg_color = Color(0.075, 0.058, 0.044, 0.92)
+	hover_style.border_color = Color(0.74, 0.52, 0.25, 0.9)
+
+	var pressed_style := normal_style.duplicate()
+	pressed_style.bg_color = Color(0.035, 0.028, 0.023, 0.95)
+	pressed_style.border_color = Color(0.35, 0.23, 0.12, 0.9)
+
+	close_button.add_theme_stylebox_override("normal", normal_style)
+	close_button.add_theme_stylebox_override("hover", hover_style)
+	close_button.add_theme_stylebox_override("pressed", pressed_style)
+	close_button.add_theme_stylebox_override("focus", hover_style)
 
 
 func _push_current_zoom_as_parent() -> void:
