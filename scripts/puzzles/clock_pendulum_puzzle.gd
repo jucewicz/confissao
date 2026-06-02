@@ -3,7 +3,8 @@ extends Control
 signal interaction_requested(interaction_id: String)
 
 const LEVELS := ["up", "middle", "down"]
-const INITIAL_STATE := ["middle", "down", "middle"]
+const INITIAL_STATE := ["up", "up", "down"]
+const LEGACY_EASY_INITIAL_STATE := ["middle", "down", "middle"]
 const STATE_KEY := "dining_room_clock_pendulum_state"
 const PENDULUM_SCALE := 0.42
 const PENDULUM_LAYOUTS := [
@@ -52,6 +53,9 @@ func _ready() -> void:
 func _load_state() -> Array:
 	var saved_state: Variant = GameState.get_value(STATE_KEY, INITIAL_STATE)
 	if saved_state is Array and saved_state.size() == 3:
+		if saved_state == LEGACY_EASY_INITIAL_STATE and not GameState.get_flag("dining_room_clock_pendulums_solved"):
+			GameState.set_value(STATE_KEY, INITIAL_STATE.duplicate())
+			return INITIAL_STATE.duplicate()
 		return saved_state.duplicate()
 	return INITIAL_STATE.duplicate()
 
