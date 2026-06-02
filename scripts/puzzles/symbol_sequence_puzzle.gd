@@ -7,6 +7,7 @@ signal puzzle_closed
 @onready var message_label: Label = $Panel/MarginContainer/Layout/MessageLabel
 @onready var close_button: Button = $Panel/MarginContainer/Layout/TopRow/CloseButton
 @onready var clear_button: Button = $Panel/MarginContainer/Layout/BottomRow/ClearButton
+@onready var panel: PanelContainer = $Panel
 
 const CORRECT_SEQUENCE: Array[String] = ["moon", "flower", "crown", "key"]
 const SYMBOL_LABELS := {
@@ -19,6 +20,7 @@ const SYMBOL_LABELS := {
 }
 
 var current_sequence: Array[String] = []
+var is_shaking := false
 
 
 func _ready() -> void:
@@ -36,6 +38,9 @@ func _ready() -> void:
 
 
 func press_symbol(symbol_id: String) -> void:
+	if is_shaking:
+		return
+
 	if current_sequence.size() >= CORRECT_SEQUENCE.size():
 		return
 
@@ -48,6 +53,9 @@ func press_symbol(symbol_id: String) -> void:
 
 
 func clear_sequence() -> void:
+	if is_shaking:
+		return
+
 	current_sequence.clear()
 	message_label.text = ""
 	_update_preview()
@@ -64,6 +72,7 @@ func _check_solution() -> void:
 		AudioManager.play_sfx("puzzle_wrong")
 		current_sequence.clear()
 		_update_preview()
+		_play_error_shake()
 
 
 func _update_preview() -> void:
@@ -75,3 +84,20 @@ func _update_preview() -> void:
 		labels.append("_")
 
 	preview_label.text = " -> ".join(labels)
+
+
+func _play_error_shake() -> void:
+	if is_shaking:
+		return
+
+	is_shaking = true
+	var base_position := panel.position
+	var shake_distance := 12.0
+	var tween := create_tween()
+	tween.tween_property(panel, "position", base_position + Vector2(shake_distance, 0.0), 0.04)
+	tween.tween_property(panel, "position", base_position + Vector2(-shake_distance, 0.0), 0.06)
+	tween.tween_property(panel, "position", base_position + Vector2(shake_distance * 0.5, 0.0), 0.05)
+	tween.tween_property(panel, "position", base_position, 0.04)
+	await tween.finished
+	panel.position = base_position
+	is_shaking = false

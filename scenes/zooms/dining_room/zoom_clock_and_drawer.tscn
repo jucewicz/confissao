@@ -27,7 +27,7 @@ mouse_filter = 0
 text = ""
 script = ExtResource("3")
 interaction_id = "open_clock_pendulums"
-cursor_type = "inspect"
+cursor_type = "grab"
 
 [node name="DrawerInscriptionHotspot" type="Button" parent="."]
 offset_left = 18.0

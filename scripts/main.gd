@@ -3,6 +3,16 @@ extends Node
 const ItemDatabase := preload("res://scripts/data/item_database.gd")
 const MESSAGE_VISIBLE_TIME := 2.4
 const MESSAGE_FADE_TIME := 0.45
+const FEEDBACK_NO_CHANGE := "Nada mudou."
+const FEEDBACK_DOES_NOT_OPEN_HERE := "Não parece abrir daqui."
+const FEEDBACK_WRONG_ITEM := "Isso não serve aqui."
+const FEEDBACK_EMPTY_DRAWER := "A gaveta está vazia."
+const FEEDBACK_EMPTY_JEWELRY_BOX := "Não há mais nada aqui."
+const FEEDBACK_EMPTY_WARDROBE := "Só há roupas antigas."
+const FEEDBACK_CLOCK_ALIGNED := "Os pêndulos permanecem alinhados."
+const FEEDBACK_EMPTY_CLOCK_COMPARTMENT := "O compartimento está vazio."
+const BLOCKED_SHAKE_DISTANCE := 12.0
+const BLOCKED_SHAKE_STEP_TIME := 0.04
 const ROOM_FADE_TIME := 0.25
 const EXIT_TO_HALL_IDLE_ALPHA := 0.92
 const EXIT_TO_HALL_HOVER_ALPHA := 1.0
@@ -40,6 +50,8 @@ var hovered_door_interactable: Node = null
 var exit_to_hall_backdrop: Panel = null
 var message_tween: Tween = null
 var room_transition_tween: Tween = null
+var blocked_room_shake_tween: Tween = null
+var blocked_exit_shake_tween: Tween = null
 var has_started_game := false
 var has_won_game := false
 var menu_transition_running := false
@@ -422,6 +434,11 @@ func _on_exit_to_hall_pressed() -> void:
 	if current_room_id == "bedroom" and not GameState.get_flag("bedroom_door_unlocked"):
 		if not GameState.get_flag("bedroom_small_key_collected"):
 			show_message("A porta está trancada.")
+			_play_exit_to_hall_blocked_shake()
+			return
+		if _has_selected_inventory_item() and _get_selected_inventory_item_id() != "item_small_victorian_key":
+			_show_wrong_selected_item_feedback()
+			_play_exit_to_hall_blocked_shake()
 			return
 
 		Inventory.remove_item("item_small_victorian_key")
@@ -448,6 +465,10 @@ func _update_exit_to_hall_tooltip() -> void:
 func _on_room_interaction_requested(interaction_id: String) -> void:
 	clear_message()
 
+	if _has_selected_inventory_item() and not _can_selected_item_handle_room_interaction(interaction_id):
+		_show_wrong_selected_item_feedback()
+		return
+
 	match interaction_id:
 		"go_bedroom":
 			go_to_room("bedroom")
@@ -458,7 +479,8 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 		"go_dining_room":
 			go_to_room("dining_room")
 		"go_center_locked":
-			show_message("Esta porta nao se abre por enquanto.")
+			show_message(FEEDBACK_DOES_NOT_OPEN_HERE)
+			_play_current_room_blocked_shake()
 		"portrait":
 			zoom_manager.open_zoom("portrait_moon")
 		"sofa_flower":
@@ -471,20 +493,30 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			_open_jewelry_box_zoom()
 		"wardrobe":
 			if GameState.get_flag("bedroom_jacket_note_collected"):
+				show_message(FEEDBACK_EMPTY_WARDROBE)
 				zoom_manager.open_zoom("wardrobe_open_without_note")
 			else:
 				zoom_manager.open_zoom("wardrobe_open_with_note")
 		"chest_drawer":
+			show_message(FEEDBACK_EMPTY_DRAWER)
 			zoom_manager.open_zoom("chest_drawer_open")
 		"nightstand_top":
+			show_message(FEEDBACK_EMPTY_DRAWER)
 			zoom_manager.open_zoom("nightstand_top_drawer_open")
 		"nightstand_bottom":
+			show_message(FEEDBACK_EMPTY_DRAWER)
 			zoom_manager.open_zoom("nightstand_bottom_drawer_open")
 		"dining_room_clock":
 			_open_dining_room_clock_zoom()
+		_:
+			show_message(FEEDBACK_NO_CHANGE)
 
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
+	if _has_selected_inventory_item() and not _can_selected_item_handle_zoom_interaction(interaction_id):
+		_show_wrong_selected_item_feedback()
+		return
+
 	match interaction_id:
 		"pickup_jacket_note":
 			if Inventory.add_item("item_jacket_note"):
@@ -515,7 +547,7 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 		"clock_pendulums_solved":
 			show_message("Os pêndulos se alinharam.")
 			_refresh_current_room_state_visuals()
-			_open_dining_room_clock_zoom()
+			_open_dining_room_clock_zoom(false)
 		"pickup_eye_medallion":
 			if Inventory.add_item("item_eye_medallion"):
 				GameState.set_flag("dining_room_eye_medallion_collected", true)
@@ -523,7 +555,9 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				_refresh_current_room_state_visuals()
 				if _check_victory_condition():
 					return
-			_open_dining_room_clock_zoom()
+			_open_dining_room_clock_zoom(false)
+		_:
+			show_message(FEEDBACK_NO_CHANGE)
 
 
 func _on_inventory_item_selected(item_id: String) -> void:
@@ -535,6 +569,7 @@ func _on_inventory_item_selected(item_id: String) -> void:
 		if item_id == "item_box_letter":
 			GameState.set_flag("bedroom_box_letter_read", true)
 		letter_popup.open_item(item_id)
+		_clear_selected_inventory_item()
 	else:
 		show_message(item_data.get("description", item_data.get("name", item_id)))
 
@@ -550,7 +585,7 @@ func _close_puzzle() -> void:
 	puzzle.visible = false
 
 
-func _open_jewelry_box_zoom() -> void:
+func _open_jewelry_box_zoom(show_empty_feedback: bool = true) -> void:
 	if not GameState.get_flag("bedroom_jewelry_box_solved"):
 		zoom_manager.open_zoom("jewelry_box_closed")
 		return
@@ -559,6 +594,8 @@ func _open_jewelry_box_zoom() -> void:
 	var has_letter := GameState.get_flag("bedroom_box_letter_collected")
 
 	if has_key and has_letter:
+		if show_empty_feedback:
+			show_message(FEEDBACK_EMPTY_JEWELRY_BOX)
 		zoom_manager.open_zoom("jewelry_box_empty")
 	elif has_key:
 		zoom_manager.open_zoom("jewelry_box_only_letter")
@@ -569,7 +606,7 @@ func _open_jewelry_box_zoom() -> void:
 
 
 func _refresh_jewelry_box_after_pickup() -> void:
-	_open_jewelry_box_zoom()
+	_open_jewelry_box_zoom(false)
 
 
 func _refresh_current_room_state_visuals() -> void:
@@ -578,14 +615,18 @@ func _refresh_current_room_state_visuals() -> void:
 			child.refresh_state_visuals()
 
 
-func _open_dining_room_clock_zoom() -> void:
+func _open_dining_room_clock_zoom(show_state_feedback: bool = true) -> void:
 	if not GameState.get_flag("dining_room_clock_pendulums_solved"):
 		zoom_manager.open_zoom("dining_room_clock")
 		return
 
 	if GameState.get_flag("dining_room_eye_medallion_collected"):
+		if show_state_feedback:
+			show_message(FEEDBACK_EMPTY_CLOCK_COMPARTMENT)
 		zoom_manager.open_zoom("dining_room_clock_open_without_eye_medallion")
 	else:
+		if show_state_feedback:
+			show_message(FEEDBACK_CLOCK_ALIGNED)
 		zoom_manager.open_zoom("dining_room_clock_open_with_eye_medallion")
 
 
@@ -595,6 +636,117 @@ func _is_jewelry_box_empty() -> bool:
 		and GameState.get_flag("bedroom_small_key_collected")
 		and GameState.get_flag("bedroom_box_letter_collected")
 	)
+
+
+func _has_selected_inventory_item() -> bool:
+	return _get_selected_inventory_item_id() != ""
+
+
+func _get_selected_inventory_item_id() -> String:
+	if inventory_ui == null:
+		return ""
+
+	var selected_slot_variant: Variant = inventory_ui.get("selected_slot")
+	if not selected_slot_variant is int:
+		return ""
+
+	var selected_slot: int = selected_slot_variant
+	if selected_slot < 0 or selected_slot >= Inventory.items.size():
+		return ""
+
+	return Inventory.items[selected_slot]
+
+
+func _can_selected_item_handle_room_interaction(interaction_id: String) -> bool:
+	match interaction_id:
+		"go_center_locked":
+			return true
+		"go_bedroom", "go_office", "go_library", "go_dining_room":
+			return false
+		_:
+			return false
+
+
+func _can_selected_item_handle_zoom_interaction(interaction_id: String) -> bool:
+	match interaction_id:
+		_:
+			return false
+
+
+func _show_wrong_selected_item_feedback() -> void:
+	show_message(FEEDBACK_WRONG_ITEM)
+	_clear_selected_inventory_item()
+
+
+func _play_current_room_blocked_shake() -> void:
+	var target := _get_current_room_visual_root()
+	if target == null:
+		return
+
+	if blocked_room_shake_tween != null:
+		blocked_room_shake_tween.kill()
+		blocked_room_shake_tween = null
+
+	var base_position := target.position
+	blocked_room_shake_tween = create_tween()
+	_add_node2d_shake_track(blocked_room_shake_tween, target, base_position)
+	blocked_room_shake_tween.tween_callback(func() -> void:
+		target.position = base_position
+		blocked_room_shake_tween = null
+	)
+
+
+func _get_current_room_visual_root() -> Node2D:
+	if current_room_container.get_child_count() == 0:
+		return null
+
+	var room := current_room_container.get_child(0)
+	var content := room.get_node_or_null("Content") as Node2D
+	if content != null:
+		return content
+	return room as Node2D
+
+
+func _play_exit_to_hall_blocked_shake() -> void:
+	if blocked_exit_shake_tween != null:
+		blocked_exit_shake_tween.kill()
+		blocked_exit_shake_tween = null
+
+	var base_button_position := exit_to_hall_button.position
+
+	blocked_exit_shake_tween = create_tween()
+	_add_control_shake_track(blocked_exit_shake_tween, exit_to_hall_button, base_button_position)
+	blocked_exit_shake_tween.tween_callback(func() -> void:
+		exit_to_hall_button.position = base_button_position
+		blocked_exit_shake_tween = null
+	)
+
+
+func _add_node2d_shake_track(tween: Tween, target: Node2D, base_position: Vector2) -> void:
+	tween.tween_property(target, "position", base_position + Vector2(BLOCKED_SHAKE_DISTANCE, 0.0), BLOCKED_SHAKE_STEP_TIME)
+	tween.tween_property(target, "position", base_position + Vector2(-BLOCKED_SHAKE_DISTANCE, 0.0), BLOCKED_SHAKE_STEP_TIME * 1.5)
+	tween.tween_property(target, "position", base_position + Vector2(BLOCKED_SHAKE_DISTANCE * 0.5, 0.0), BLOCKED_SHAKE_STEP_TIME)
+	tween.tween_property(target, "position", base_position, BLOCKED_SHAKE_STEP_TIME)
+
+
+func _add_control_shake_track(tween: Tween, target: Control, base_position: Vector2) -> void:
+	tween.tween_property(target, "position", base_position + Vector2(BLOCKED_SHAKE_DISTANCE, 0.0), BLOCKED_SHAKE_STEP_TIME)
+	tween.tween_property(target, "position", base_position + Vector2(-BLOCKED_SHAKE_DISTANCE, 0.0), BLOCKED_SHAKE_STEP_TIME * 1.5)
+	tween.tween_property(target, "position", base_position + Vector2(BLOCKED_SHAKE_DISTANCE * 0.5, 0.0), BLOCKED_SHAKE_STEP_TIME)
+	tween.tween_property(target, "position", base_position, BLOCKED_SHAKE_STEP_TIME)
+
+
+func _clear_selected_inventory_item() -> void:
+	if inventory_ui == null:
+		return
+
+	var selected_slot_variant: Variant = inventory_ui.get("selected_slot")
+	if not selected_slot_variant is int:
+		return
+
+	inventory_ui.set("selected_slot", -1)
+	if inventory_ui.has_method("refresh"):
+		inventory_ui.refresh()
 
 
 func _check_victory_condition() -> bool:
