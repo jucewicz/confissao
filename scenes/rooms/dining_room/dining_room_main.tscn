@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/rooms/dining_room_controller.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/backgrounds/dining_room/dining_room.png" id="2"]
@@ -12,6 +12,9 @@ size = Vector2(225, 190)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cabinet_display"]
 size = Vector2(250, 355)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floral_reliquary"]
+size = Vector2(190, 260)
 
 [node name="DiningRoomMain" type="Node2D"]
 script = ExtResource("1")
@@ -51,3 +54,12 @@ cursor_type = "grab"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/CabinetDisplayHotspot"]
 shape = SubResource("RectangleShape2D_cabinet_display")
+
+[node name="FloralReliquaryHotspot" type="Area2D" parent="Content/Hotspots"]
+position = Vector2(1512, 322)
+script = ExtResource("3")
+interaction_id = "dining_room_floral_reliquary"
+cursor_type = "inspect"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/FloralReliquaryHotspot"]
+shape = SubResource("RectangleShape2D_floral_reliquary")

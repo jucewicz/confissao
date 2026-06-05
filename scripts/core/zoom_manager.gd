@@ -31,6 +31,8 @@ var zoom_scenes := {
 	"dining_room_clock_open_without_eye_medallion": preload("res://scenes/zooms/dining_room/zoom_clock_open_without_eye_medallion.tscn"),
 	"dining_room_clock_pendulums": preload("res://scenes/zooms/dining_room/zoom_clock_pendulums.tscn"),
 	"dining_room_clock_drawer_inscription": preload("res://scenes/zooms/dining_room/zoom_clock_drawer_inscription.tscn"),
+	"dining_room_floral_reliquary_far": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_far.tscn"),
+	"dining_room_floral_reliquary_close": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_close.tscn"),
 }
 
 

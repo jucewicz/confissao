@@ -510,6 +510,8 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			zoom_manager.open_zoom("nightstand_bottom_drawer_open")
 		"dining_room_clock":
 			_open_dining_room_clock_zoom()
+		"dining_room_floral_reliquary":
+			zoom_manager.open_zoom("dining_room_floral_reliquary_far")
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
@@ -533,6 +535,8 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			zoom_manager.open_zoom("dining_room_clock_pendulums", true)
 		"open_clock_drawer_inscription":
 			zoom_manager.open_zoom("dining_room_clock_drawer_inscription", true)
+		"open_floral_reliquary_close":
+			zoom_manager.open_zoom("dining_room_floral_reliquary_close", true)
 		"pickup_small_key":
 			if Inventory.add_item("item_small_victorian_key"):
 				GameState.set_flag("bedroom_small_key_collected", true)
@@ -559,6 +563,8 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				if _check_victory_condition():
 					return
 			_open_dining_room_clock_zoom(false)
+		"floral_reliquary_solved":
+			show_message("O relicário se destravou.")
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
