@@ -50,33 +50,33 @@ mouse_filter = 0
 text = ""
 
 [node name="SlotSangueHotspot" type="Button" parent="."]
-offset_left = 810.0
-offset_top = 165.0
-offset_right = 986.0
-offset_bottom = 340.0
+offset_left = 785.0
+offset_top = 185.0
+offset_right = 1025.0
+offset_bottom = 405.0
 mouse_filter = 0
 text = ""
 
 [node name="SlotSilencioHotspot" type="Button" parent="."]
-offset_left = 1104.0
-offset_top = 165.0
-offset_right = 1280.0
-offset_bottom = 340.0
+offset_left = 1075.0
+offset_top = 185.0
+offset_right = 1315.0
+offset_bottom = 405.0
 mouse_filter = 0
 text = ""
 
 [node name="SlotAmorHotspot" type="Button" parent="."]
-offset_left = 810.0
-offset_top = 448.0
-offset_right = 986.0
-offset_bottom = 623.0
+offset_left = 785.0
+offset_top = 455.0
+offset_right = 1025.0
+offset_bottom = 675.0
 mouse_filter = 0
 text = ""
 
 [node name="SlotCulpaHotspot" type="Button" parent="."]
-offset_left = 1104.0
-offset_top = 448.0
-offset_right = 1280.0
-offset_bottom = 623.0
+offset_left = 1075.0
+offset_top = 455.0
+offset_right = 1315.0
+offset_bottom = 675.0
 mouse_filter = 0
 text = ""

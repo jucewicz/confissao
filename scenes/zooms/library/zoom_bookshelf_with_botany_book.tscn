@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/zoom_view.gd" id="1"]
+[ext_resource type="Texture2D" path="res://art/zoom_ins/library/zoom_bookshelf_with_botany_book.png" id="2"]
+[ext_resource type="Script" path="res://scripts/core/ui_interactable.gd" id="3"]
+
+[node name="ZoomBookshelfWithBotanyBook" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Image" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2")
+stretch_mode = 0
+
+[node name="BotanyBookHotspot" type="Button" parent="."]
+offset_left = 708.0
+offset_top = 348.0
+offset_right = 854.0
+offset_bottom = 668.0
+mouse_filter = 0
+text = ""
+script = ExtResource("3")
+interaction_id = "pickup_botany_book"
+disabled_flag = "library_botany_book_collected"
+cursor_type = "pickup"

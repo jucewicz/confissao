@@ -3,7 +3,8 @@ extends "res://scripts/core/zoom_view.gd"
 const STATE_KEY := "dining_room_floral_reliquary_state"
 const SOLVED_FLAG := "dining_room_floral_reliquary_solved"
 const FLOWER_SCALE := 0.125
-const PLACED_FLOWER_SCALE := 0.115
+const PLACED_FLOWER_SCALE := 0.095
+const ART_SIZE := Vector2(1672.0, 941.0)
 
 const FLOWER_TEXTURES := {
 	"lily": preload("res://art/zoom_ins/dining_room/floral_reliquary/flower_lily.png"),
@@ -22,8 +23,15 @@ const FLOWER_START_POSITIONS := {
 const SLOT_POSITIONS := {
 	"sangue": Vector2(942.0, 196.0),
 	"silencio": Vector2(1112.0, 196.0),
-	"amor": Vector2(942.0, 350.0),
-	"culpa": Vector2(1112.0, 350.0),
+	"amor": Vector2(942.0, 316.0),
+	"culpa": Vector2(1112.0, 316.0),
+}
+
+const FLOWER_ANCHORS := {
+	"lily": Vector2(286.0, 205.0),
+	"rose": Vector2(248.0, 158.0),
+	"violet": Vector2(265.0, 180.0),
+	"carnation": Vector2(250.0, 178.0),
 }
 
 const SOLUTION := {
@@ -52,6 +60,11 @@ func _on_game_state_changed(_state_name: String, _value: Variant) -> void:
 	_update_visuals()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and is_node_ready():
+		_update_visuals()
+
+
 func _update_visuals() -> void:
 	var slot_assignments := _get_slot_assignments()
 	var placed_flowers := {}
@@ -63,16 +76,18 @@ func _update_visuals() -> void:
 		var texture: Texture2D = FLOWER_TEXTURES[flower_id]
 		var center_position: Vector2
 		var scale_factor := FLOWER_SCALE
+		var is_placed := false
 		if placed_flowers.has(flower_id):
 			center_position = SLOT_POSITIONS[placed_flowers[flower_id]]
 			scale_factor = PLACED_FLOWER_SCALE
+			is_placed = true
 		else:
 			center_position = FLOWER_START_POSITIONS[flower_id]
 
-		var size := Vector2(texture.get_width(), texture.get_height()) * scale_factor
+		var size := _get_flower_size(texture, scale_factor, is_placed)
 		flower.texture = texture
 		flower.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		flower.position = center_position - (size / 2.0)
+		flower.position = _get_flower_position(flower_id, center_position, scale_factor, is_placed)
 		flower.size = size
 
 
@@ -84,3 +99,32 @@ func _get_slot_assignments() -> Dictionary:
 	if saved_state is Dictionary:
 		return saved_state.duplicate()
 	return {}
+
+
+func _get_view_scale() -> Vector2:
+	if size.x <= 0.0 or size.y <= 0.0:
+		return Vector2.ONE
+	return Vector2(size.x / ART_SIZE.x, size.y / ART_SIZE.y)
+
+
+func _art_to_view_position(position: Vector2) -> Vector2:
+	return position * _get_view_scale()
+
+
+func _art_size_to_view_size(rect_size: Vector2) -> Vector2:
+	return rect_size * _get_view_scale()
+
+
+func _get_flower_position(flower_id: String, center_position: Vector2, scale_factor: float, is_placed: bool) -> Vector2:
+	if is_placed:
+		var anchor_position := _art_size_to_view_size(FLOWER_ANCHORS[flower_id] * scale_factor)
+		return _art_to_view_position(center_position) - anchor_position
+
+	var texture: Texture2D = FLOWER_TEXTURES[flower_id]
+	var size := Vector2(texture.get_width(), texture.get_height()) * scale_factor
+	return center_position - (size / 2.0)
+
+
+func _get_flower_size(texture: Texture2D, scale_factor: float, is_placed: bool) -> Vector2:
+	var base_size := Vector2(texture.get_width(), texture.get_height()) * scale_factor
+	return _art_size_to_view_size(base_size) if is_placed else base_size

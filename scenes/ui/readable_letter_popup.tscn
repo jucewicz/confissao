@@ -1,6 +1,68 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/readable_letter_popup.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.055, 0.043, 0.034, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.42, 0.2, 0.9)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_image_frame"]
+bg_color = Color(0.022, 0.018, 0.014, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.29, 0.16, 0.86)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.115, 0.077, 0.045, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.66, 0.45, 0.22, 0.88)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.16, 0.105, 0.058, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.86, 0.62, 0.28, 0.96)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="ReadableLetterPopup" type="Control"]
 anchors_preset = 15
@@ -13,7 +75,7 @@ script = ExtResource("1")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.72)
+color = Color(0, 0, 0, 0.78)
 
 [node name="Panel" type="PanelContainer" parent="."]
 anchors_preset = 8
@@ -21,40 +83,136 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -520.0
-offset_top = -310.0
-offset_right = 520.0
-offset_bottom = 310.0
+offset_left = -540.0
+offset_top = -320.0
+offset_right = 540.0
+offset_bottom = 320.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel"]
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
 
 [node name="Layout" type="HBoxContainer" parent="Panel/MarginContainer"]
-theme_override_constants/separation = 24
+theme_override_constants/separation = 28
 
-[node name="ItemImage" type="TextureRect" parent="Panel/MarginContainer/Layout"]
-custom_minimum_size = Vector2(300, 430)
+[node name="ImageFrame" type="PanelContainer" parent="Panel/MarginContainer/Layout"]
+custom_minimum_size = Vector2(330, 460)
+theme_override_styles/panel = SubResource("StyleBoxFlat_image_frame")
+
+[node name="ItemImage" type="TextureRect" parent="Panel/MarginContainer/Layout/ImageFrame"]
+custom_minimum_size = Vector2(330, 460)
 expand_mode = 1
 stretch_mode = 5
 
 [node name="TextColumn" type="VBoxContainer" parent="Panel/MarginContainer/Layout"]
 size_flags_horizontal = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 18
 
 [node name="TitleLabel" type="Label" parent="Panel/MarginContainer/Layout/TextColumn"]
+theme_override_colors/font_color = Color(0.91, 0.78, 0.56, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 34
 text = "Carta"
 
+[node name="Divider" type="ColorRect" parent="Panel/MarginContainer/Layout/TextColumn"]
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.58, 0.38, 0.17, 0.8)
+
 [node name="BodyLabel" type="RichTextLabel" parent="Panel/MarginContainer/Layout/TextColumn"]
-custom_minimum_size = Vector2(0, 390)
+custom_minimum_size = Vector2(0, 330)
 size_flags_vertical = 3
 bbcode_enabled = false
+theme_override_colors/default_color = Color(0.82, 0.72, 0.58, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.72)
+theme_override_constants/line_separation = 8
+theme_override_font_sizes/normal_font_size = 23
 text = ""
 fit_content = true
 
-[node name="CloseButton" type="Button" parent="Panel/MarginContainer/Layout/TextColumn"]
-custom_minimum_size = Vector2(140, 44)
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/MarginContainer/Layout/TextColumn"]
+alignment = 2
+theme_override_constants/separation = 12
+
+[node name="ReadButton" type="Button" parent="Panel/MarginContainer/Layout/TextColumn/ButtonRow"]
+custom_minimum_size = Vector2(132, 46)
+theme_override_colors/font_color = Color(0.93, 0.79, 0.55, 1)
+theme_override_colors/font_hover_color = Color(1, 0.9, 0.68, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button")
+text = "Ler"
+
+[node name="CloseButton" type="Button" parent="Panel/MarginContainer/Layout/TextColumn/ButtonRow"]
+custom_minimum_size = Vector2(132, 46)
+theme_override_colors/font_color = Color(0.86, 0.72, 0.52, 1)
+theme_override_colors/font_hover_color = Color(0.98, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button")
+text = "Fechar"
+
+[node name="PageOverlay" type="Control" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="PageBackdrop" type="ColorRect" parent="PageOverlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.86)
+
+[node name="PageImage" type="TextureRect" parent="PageOverlay"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -740.0
+offset_top = -496.0
+offset_right = 740.0
+offset_bottom = 496.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PageButtonRow" type="HBoxContainer" parent="PageOverlay"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -88.0
+offset_right = 160.0
+offset_bottom = -34.0
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="BackToItemButton" type="Button" parent="PageOverlay/PageButtonRow"]
+custom_minimum_size = Vector2(150, 46)
+theme_override_colors/font_color = Color(0.86, 0.72, 0.52, 1)
+theme_override_colors/font_hover_color = Color(0.98, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button")
+text = "Voltar"
+
+[node name="ClosePageButton" type="Button" parent="PageOverlay/PageButtonRow"]
+custom_minimum_size = Vector2(150, 46)
+theme_override_colors/font_color = Color(0.86, 0.72, 0.52, 1)
+theme_override_colors/font_hover_color = Color(0.98, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button")
 text = "Fechar"

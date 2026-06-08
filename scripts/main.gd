@@ -11,6 +11,7 @@ const FEEDBACK_EMPTY_JEWELRY_BOX := "Não há mais nada aqui."
 const FEEDBACK_EMPTY_WARDROBE := "Só há roupas antigas."
 const FEEDBACK_CLOCK_ALIGNED := "Os pêndulos permanecem alinhados."
 const FEEDBACK_EMPTY_CLOCK_COMPARTMENT := "O compartimento está vazio."
+const FEEDBACK_EMPTY_LIBRARY_SHELF := "O espaço do livro ficou vazio."
 const BLOCKED_SHAKE_DISTANCE := 12.0
 const BLOCKED_SHAKE_STEP_TIME := 0.04
 const ROOM_FADE_TIME := 0.25
@@ -512,6 +513,8 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			_open_dining_room_clock_zoom()
 		"dining_room_floral_reliquary":
 			zoom_manager.open_zoom("dining_room_floral_reliquary_far")
+		"library_bookshelf":
+			_open_library_bookshelf_zoom()
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
@@ -563,8 +566,15 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				if _check_victory_condition():
 					return
 			_open_dining_room_clock_zoom(false)
+		"pickup_botany_book":
+			if Inventory.add_item("item_botany_book"):
+				GameState.set_flag("library_botany_book_collected", true)
+				show_message("Você pegou um livro de botânica.")
+			_open_library_bookshelf_zoom(false)
 		"floral_reliquary_solved":
 			show_message("O relicário se destravou.")
+			if _check_victory_condition():
+				return
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
@@ -638,6 +648,15 @@ func _open_dining_room_clock_zoom(show_state_feedback: bool = true) -> void:
 		if show_state_feedback:
 			show_message(FEEDBACK_CLOCK_ALIGNED)
 		zoom_manager.open_zoom("dining_room_clock_open_with_eye_medallion")
+
+
+func _open_library_bookshelf_zoom(show_empty_feedback: bool = true) -> void:
+	if GameState.get_flag("library_botany_book_collected"):
+		if show_empty_feedback:
+			show_message(FEEDBACK_EMPTY_LIBRARY_SHELF)
+		zoom_manager.open_zoom("library_bookshelf_without_botany_book")
+	else:
+		zoom_manager.open_zoom("library_bookshelf_with_botany_book")
 
 
 func _is_jewelry_box_empty() -> bool:
@@ -766,8 +785,8 @@ func _check_victory_condition() -> bool:
 
 	if (
 		GameState.get_flag("bedroom_small_key_collected")
-		and GameState.get_flag("bedroom_box_letter_collected")
 		and GameState.get_flag("dining_room_eye_medallion_collected")
+		and GameState.get_flag("dining_room_floral_reliquary_solved")
 	):
 		_show_victory_screen()
 		return true

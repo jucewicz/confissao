@@ -23,12 +23,20 @@ const ITEMS := {
 		"icon": "res://art/items/bedroom/item_box_letter.png",
 		"region": Rect2(130, 310, 1000, 585),
 		"type": "readable",
-		"text": "Ele nunca confiou nas fechaduras grandes.\n\nGuardava o que importava onde ninguém pensaria em procurar:\nnão atrás da porta,\nmas dentro daquilo que registra seus pecados.\n\nA chave pequena pertence ao silêncio da escrivaninha."
+		"text": "Não serve para nenhum puzzle ainda"
 	},
 	"item_eye_medallion": {
 		"name": "Medalhão do olho fechado",
 		"description": "Um medalhão antigo de metal escurecido, gravado com um olho fechado.",
 		"icon": "res://art/items/dining_room/item_eye_medallion.png",
+		"type": "inspectable",
+		"text": ""
+	},
+	"item_botany_book": {
+		"name": "Livro de botânica",
+		"description": "Um volume antigo de capa verde, marcado por anotações sobre flores usadas em ritos e homenagens.",
+		"icon": "res://art/items/library/item_botany_book.png",
+		"read_image": "res://art/items/library/botany_book_page_flowers.png",
 		"type": "inspectable",
 		"text": ""
 	}
