@@ -566,6 +566,10 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				if _check_victory_condition():
 					return
 			_open_dining_room_clock_zoom(false)
+		"pickup_scribbled_napkin":
+			if Inventory.add_item("item_scribbled_napkin"):
+				GameState.set_flag("dining_room_scribbled_napkin_collected", true)
+				show_message("Você pegou um guardanapo rabiscado.")
 		"pickup_botany_book":
 			if Inventory.add_item("item_botany_book"):
 				GameState.set_flag("library_botany_book_collected", true)

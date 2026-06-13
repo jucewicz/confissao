@@ -32,6 +32,13 @@ const ITEMS := {
 		"type": "inspectable",
 		"text": ""
 	},
+	"item_scribbled_napkin": {
+		"name": "Guardanapo rabiscado",
+		"description": "Um guardanapo antigo com uma mensagem escrita às pressas.",
+		"icon": "res://art/items/dining_room/item_scribbled_napkin.png",
+		"type": "inspectable",
+		"text": ""
+	},
 	"item_botany_book": {
 		"name": "Livro de botânica",
 		"description": "Um volume antigo de capa verde, marcado por anotações sobre flores usadas em ritos e homenagens.",
