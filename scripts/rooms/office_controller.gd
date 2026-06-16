@@ -2,8 +2,7 @@ extends Node2D
 
 signal interaction_requested(interaction_id: String)
 
-const BOX_OPEN_WITH_MEDALLION_BACKGROUND := preload("res://art/backgrounds/office/office_box_open_with_medallion.png")
-const BOX_OPEN_WITHOUT_MEDALLION_BACKGROUND := preload("res://art/backgrounds/office/office_box_open_without_medallion.png")
+const DEFAULT_OFFICE_BACKGROUND := preload("res://art/backgrounds/office/office_new.png")
 
 @onready var background: Sprite2D = $Content/Background
 
@@ -14,10 +13,7 @@ func _ready() -> void:
 
 
 func refresh_state_visuals() -> void:
-	if GameState.get_flag("office_flame_medallion_collected"):
-		background.texture = BOX_OPEN_WITHOUT_MEDALLION_BACKGROUND
-	elif GameState.get_flag("office_box_opened"):
-		background.texture = BOX_OPEN_WITH_MEDALLION_BACKGROUND
+	background.texture = DEFAULT_OFFICE_BACKGROUND
 	_update_box_cursor()
 
 

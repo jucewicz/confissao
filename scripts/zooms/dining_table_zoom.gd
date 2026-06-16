@@ -1,6 +1,6 @@
 extends "res://scripts/core/scaled_zoom_view.gd"
 
-const SCRIBBLED_NAPKIN_RECT := Rect2(455.0, 500.0, 215.0, 190.0)
+const SCRIBBLED_NAPKIN_RECT := Rect2(525.0, 500.0, 145.0, 140.0)
 
 @onready var scribbled_napkin_hotspot: Button = $ScribbledNapkinHotspot
 

@@ -51,7 +51,7 @@ func _ready() -> void:
 	close_button.pressed.connect(close_zoom)
 
 
-func open_zoom(zoom_id: String, keep_current_as_parent: bool = false) -> void:
+func open_zoom(zoom_id: String, keep_current_as_parent: bool = false, preserve_parent_stack: bool = false) -> void:
 	if not zoom_scenes.has(zoom_id):
 		push_warning("Zoom nao encontrado: " + zoom_id)
 		return
@@ -60,6 +60,8 @@ func open_zoom(zoom_id: String, keep_current_as_parent: bool = false) -> void:
 	if current_zoom != null:
 		if keep_current_as_parent:
 			_push_current_zoom_as_parent()
+		elif preserve_parent_stack:
+			zooms_to_free_after_fade = _prepare_current_zoom_for_replacement()
 		else:
 			zooms_to_free_after_fade = _prepare_current_zoom_tree_for_replacement()
 
@@ -180,6 +182,8 @@ func _restore_parent_zoom() -> void:
 	var parent_zoom: Dictionary = parent_zoom_stack.pop_back()
 	current_zoom = parent_zoom["node"]
 	current_zoom_id = parent_zoom["id"]
+	if current_zoom.has_method("refresh_state_visuals"):
+		current_zoom.refresh_state_visuals()
 	current_zoom.visible = true
 	current_zoom.modulate.a = 1.0
 	current_zoom.mouse_filter = parent_zoom["mouse_filter"]
@@ -203,14 +207,20 @@ func close_all_zooms() -> void:
 
 func _prepare_current_zoom_tree_for_replacement() -> Array:
 	var zooms_to_free := []
-	_disable_zoom_input(current_zoom)
-	zooms_to_free.append(current_zoom)
-	current_zoom = null
-	current_zoom_id = ""
+	zooms_to_free.append_array(_prepare_current_zoom_for_replacement())
 	for parent_zoom in parent_zoom_stack:
 		_disable_zoom_input(parent_zoom["node"])
 		zooms_to_free.append(parent_zoom["node"])
 	parent_zoom_stack.clear()
+	return zooms_to_free
+
+
+func _prepare_current_zoom_for_replacement() -> Array:
+	var zooms_to_free := []
+	_disable_zoom_input(current_zoom)
+	zooms_to_free.append(current_zoom)
+	current_zoom = null
+	current_zoom_id = ""
 	return zooms_to_free
 
 

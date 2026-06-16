@@ -19,10 +19,10 @@ texture = ExtResource("2")
 stretch_mode = 0
 
 [node name="ScribbledNapkinHotspot" type="Button" parent="."]
-offset_left = 455.0
+offset_left = 525.0
 offset_top = 500.0
 offset_right = 670.0
-offset_bottom = 690.0
+offset_bottom = 640.0
 mouse_filter = 0
 text = ""
 script = ExtResource("3")

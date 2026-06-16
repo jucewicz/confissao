@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/core/interactable.gd" id="3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_desktop"]
-size = Vector2(1110, 360)
+size = Vector2(525, 240)
 
 [node name="OfficeMain" type="Node2D"]
 script = ExtResource("1")
@@ -20,7 +20,7 @@ texture = ExtResource("2")
 [node name="Hotspots" type="Node2D" parent="Content"]
 
 [node name="BoxHotspot" type="Area2D" parent="Content/Hotspots"]
-position = Vector2(835, 488)
+position = Vector2(632.5, 645)
 script = ExtResource("3")
 interaction_id = "office_box"
 cursor_type = "inspect"

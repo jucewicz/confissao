@@ -331,8 +331,7 @@ func go_to_room(room_id: String, animated: bool = true) -> void:
 		push_warning("Cenario nao encontrado: " + room_id)
 		return
 
-	if zoom_manager.visible:
-		zoom_manager.close_all_zooms()
+	zoom_manager.close_all_zooms()
 
 	if room_transition_tween != null:
 		room_transition_tween.kill()
@@ -522,10 +521,7 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 		"library_bookshelf":
 			_open_library_bookshelf_zoom()
 		"office_box":
-			if GameState.get_flag("office_box_opened"):
-				_open_office_box_zoom(false)
-			else:
-				zoom_manager.open_zoom("office_desktop")
+			zoom_manager.open_zoom("office_desktop")
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
@@ -599,12 +595,12 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				GameState.set_flag("office_flame_medallion_collected", true)
 				show_message("Você pegou o medalhão da chama.")
 				_refresh_current_room_state_visuals()
-			_open_office_box_zoom(false)
+			_open_office_box_zoom(false, false, true)
 		"office_inventory_box_solved":
 			GameState.set_flag("office_box_opened", true)
 			show_message("A caixa da escrivaninha se abriu.")
 			_refresh_current_room_state_visuals()
-			_open_office_box_zoom(false)
+			_open_office_box_zoom(false, false, true)
 		"floral_reliquary_solved":
 			show_message("O relicário se destravou.")
 			if _check_victory_condition():
@@ -702,13 +698,17 @@ func _open_library_bookshelf_zoom(show_empty_feedback: bool = true) -> void:
 		zoom_manager.open_zoom("library_bookshelf_with_botany_book")
 
 
-func _open_office_box_zoom(show_empty_feedback: bool = true, keep_current_as_parent: bool = false) -> void:
+func _open_office_box_zoom(
+	show_empty_feedback: bool = true,
+	keep_current_as_parent: bool = false,
+	preserve_parent_stack: bool = false,
+) -> void:
 	if GameState.get_flag("office_flame_medallion_collected"):
 		if show_empty_feedback:
 			show_message(FEEDBACK_EMPTY_OFFICE_BOX)
-		zoom_manager.open_zoom("office_box_open_without_medallion", keep_current_as_parent)
+		zoom_manager.open_zoom("office_box_open_without_medallion", keep_current_as_parent, preserve_parent_stack)
 	else:
-		zoom_manager.open_zoom("office_box_open_with_medallion", keep_current_as_parent)
+		zoom_manager.open_zoom("office_box_open_with_medallion", keep_current_as_parent, preserve_parent_stack)
 
 
 func _is_jewelry_box_empty() -> bool:

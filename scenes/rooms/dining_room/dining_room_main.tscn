@@ -17,7 +17,7 @@ size = Vector2(250, 355)
 size = Vector2(190, 260)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_table"]
-size = Vector2(950, 245)
+size = Vector2(860, 245)
 
 [node name="DiningRoomMain" type="Node2D"]
 script = ExtResource("1")
@@ -35,7 +35,7 @@ texture = ExtResource("2")
 position = Vector2(64, 430)
 script = ExtResource("3")
 interaction_id = "dining_room_clock"
-cursor_type = "grab"
+cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/ClockHotspot"]
 shape = SubResource("RectangleShape2D_clock")
@@ -44,7 +44,7 @@ shape = SubResource("RectangleShape2D_clock")
 position = Vector2(260, 595)
 script = ExtResource("3")
 interaction_id = "dining_room_clock"
-cursor_type = "grab"
+cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/CabinetDrawersHotspot"]
 shape = SubResource("RectangleShape2D_cabinet_drawers")
@@ -53,7 +53,7 @@ shape = SubResource("RectangleShape2D_cabinet_drawers")
 position = Vector2(260, 345)
 script = ExtResource("3")
 interaction_id = "dining_room_clock"
-cursor_type = "grab"
+cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/CabinetDisplayHotspot"]
 shape = SubResource("RectangleShape2D_cabinet_display")
@@ -68,7 +68,7 @@ cursor_type = "inspect"
 shape = SubResource("RectangleShape2D_floral_reliquary")
 
 [node name="TableHotspot" type="Area2D" parent="Content/Hotspots"]
-position = Vector2(840, 595)
+position = Vector2(885, 595)
 script = ExtResource("3")
 interaction_id = "dining_room_table"
 cursor_type = "inspect"
