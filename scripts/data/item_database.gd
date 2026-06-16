@@ -3,11 +3,12 @@ class_name ItemDatabase
 const ITEMS := {
 	"item_jacket_note": {
 		"name": "Carta dobrada",
-		"description": "Uma carta antiga retirada do bolso de uma jaqueta azul-marinho.",
+		"description": "Uma carta antiga retirada do bolso de uma jaqueta azul-marinho. A caligrafia parece cuidadosa, mas a mensagem exige atenção.",
 		"icon": "res://art/items/bedroom/item_jacket_note.png",
 		"region": Rect2(175, 160, 960, 900),
-		"type": "readable",
-		"text": "Quando a noite entrar sem ser convidada, não procure primeiro nas mãos dos vivos.\n\nComece onde o rosto antigo guarda, junto ao peito, o brilho que não lhe pertence.\nDepois, procure descanso no lugar em que o bordado resiste ao tempo.\nOnde a claridade fria cair sobre o chão, abaixe os olhos para o desenho esquecido.\nPor fim, volte-se à escrita fechada sobre a madeira de trabalho.\n\nSó nessa ordem a lembrança dela consentirá em se revelar."
+		"read_image": "res://art/items/bedroom/jacket_note_read.png",
+		"type": "inspectable",
+		"text": ""
 	},
 	"item_small_victorian_key": {
 		"name": "Chave pequena",
