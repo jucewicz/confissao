@@ -36,6 +36,7 @@ const ITEMS := {
 		"name": "Guardanapo rabiscado",
 		"description": "Um guardanapo antigo com uma mensagem escrita às pressas.",
 		"icon": "res://art/items/dining_room/item_scribbled_napkin.png",
+		"read_image": "res://art/items/dining_room/scribbled_napkin_read.png",
 		"type": "inspectable",
 		"text": ""
 	},
@@ -44,6 +45,13 @@ const ITEMS := {
 		"description": "Um volume antigo de capa verde, marcado por anotações sobre flores usadas em ritos e homenagens.",
 		"icon": "res://art/items/library/item_botany_book.png",
 		"read_image": "res://art/items/library/botany_book_page_flowers.png",
+		"type": "inspectable",
+		"text": ""
+	},
+	"item_flame_medallion": {
+		"name": "Medalhão da chama",
+		"description": "Um medalhão antigo de metal escurecido, gravado com uma chama.",
+		"icon": "res://art/items/office/item_flame_medallion.png",
 		"type": "inspectable",
 		"text": ""
 	}

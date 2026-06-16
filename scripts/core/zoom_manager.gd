@@ -31,10 +31,17 @@ var zoom_scenes := {
 	"dining_room_clock_open_without_eye_medallion": preload("res://scenes/zooms/dining_room/zoom_clock_open_without_eye_medallion.tscn"),
 	"dining_room_clock_pendulums": preload("res://scenes/zooms/dining_room/zoom_clock_pendulums.tscn"),
 	"dining_room_clock_drawer_inscription": preload("res://scenes/zooms/dining_room/zoom_clock_drawer_inscription.tscn"),
+	"dining_room_table_with_scribbled_napkin": preload("res://scenes/zooms/dining_room/zoom_dining_table_with_scribbled_napkin.tscn"),
+	"dining_room_table_without_scribbled_napkin": preload("res://scenes/zooms/dining_room/zoom_dining_table_without_scribbled_napkin.tscn"),
 	"dining_room_floral_reliquary_far": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_far.tscn"),
 	"dining_room_floral_reliquary_close": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_close.tscn"),
 	"library_bookshelf_with_botany_book": preload("res://scenes/zooms/library/zoom_bookshelf_with_botany_book.tscn"),
 	"library_bookshelf_without_botany_book": preload("res://scenes/zooms/library/zoom_bookshelf_without_botany_book.tscn"),
+	"office_desktop": preload("res://scenes/zooms/office/zoom_office_desktop.tscn"),
+	"office_desktop_letters_stack": preload("res://scenes/zooms/office/zoom_office_desktop_letters_stack.tscn"),
+	"office_inventory_box": preload("res://scenes/zooms/office/zoom_office_inventory_box.tscn"),
+	"office_box_open_with_medallion": preload("res://scenes/zooms/office/zoom_office_box_open_with_medallion.tscn"),
+	"office_box_open_without_medallion": preload("res://scenes/zooms/office/zoom_office_box_open_without_medallion.tscn"),
 }
 
 
@@ -75,6 +82,13 @@ func open_zoom(zoom_id: String, keep_current_as_parent: bool = false) -> void:
 
 func close_zoom(animated: bool = true) -> void:
 	if current_zoom == null:
+		if not parent_zoom_stack.is_empty():
+			_free_zoom_nodes(parent_zoom_stack.map(func(parent_zoom: Dictionary) -> Node:
+				return parent_zoom["node"]
+			))
+			parent_zoom_stack.clear()
+		visible = false
+		_set_room_interactables_enabled(true)
 		return
 
 	var zoom_to_close := current_zoom
@@ -170,6 +184,21 @@ func _restore_parent_zoom() -> void:
 	current_zoom.modulate.a = 1.0
 	current_zoom.mouse_filter = parent_zoom["mouse_filter"]
 	visible = true
+
+
+func close_all_zooms() -> void:
+	var zooms_to_free := []
+	if current_zoom != null:
+		zooms_to_free.append(current_zoom)
+	for parent_zoom in parent_zoom_stack:
+		zooms_to_free.append(parent_zoom["node"])
+
+	current_zoom = null
+	current_zoom_id = ""
+	parent_zoom_stack.clear()
+	_free_zoom_nodes(zooms_to_free)
+	visible = false
+	_set_room_interactables_enabled(true)
 
 
 func _prepare_current_zoom_tree_for_replacement() -> Array:

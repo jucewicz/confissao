@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8tgnocaucksq"
-path="res://.godot/imported/office_desk.png-292f101978175012bab6725c47238b87.ctex"
+uid="uid://bi8ejt0fvtq5k"
+path="res://.godot/imported/office_box_open_without_medallion.png-1aed252d8fc44521ebd78d197eb578d3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/zoom_ins/office/office_desk.png"
-dest_files=["res://.godot/imported/office_desk.png-292f101978175012bab6725c47238b87.ctex"]
+source_file="res://art/backgrounds/office/office_box_open_without_medallion.png"
+dest_files=["res://.godot/imported/office_box_open_without_medallion.png-1aed252d8fc44521ebd78d197eb578d3.ctex"]
 
 [params]
 

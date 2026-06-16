@@ -12,6 +12,7 @@ const FEEDBACK_EMPTY_WARDROBE := "Só há roupas antigas."
 const FEEDBACK_CLOCK_ALIGNED := "Os pêndulos permanecem alinhados."
 const FEEDBACK_EMPTY_CLOCK_COMPARTMENT := "O compartimento está vazio."
 const FEEDBACK_EMPTY_LIBRARY_SHELF := "O espaço do livro ficou vazio."
+const FEEDBACK_EMPTY_OFFICE_BOX := "A caixa está vazia."
 const BLOCKED_SHAKE_DISTANCE := 12.0
 const BLOCKED_SHAKE_STEP_TIME := 0.04
 const ROOM_FADE_TIME := 0.25
@@ -330,6 +331,9 @@ func go_to_room(room_id: String, animated: bool = true) -> void:
 		push_warning("Cenario nao encontrado: " + room_id)
 		return
 
+	if zoom_manager.visible:
+		zoom_manager.close_all_zooms()
+
 	if room_transition_tween != null:
 		room_transition_tween.kill()
 
@@ -511,10 +515,17 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			zoom_manager.open_zoom("nightstand_bottom_drawer_open")
 		"dining_room_clock":
 			_open_dining_room_clock_zoom()
+		"dining_room_table":
+			_open_dining_room_table_zoom()
 		"dining_room_floral_reliquary":
 			zoom_manager.open_zoom("dining_room_floral_reliquary_far")
 		"library_bookshelf":
 			_open_library_bookshelf_zoom()
+		"office_box":
+			if GameState.get_flag("office_box_opened"):
+				_open_office_box_zoom(false)
+			else:
+				zoom_manager.open_zoom("office_desktop")
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
@@ -540,6 +551,13 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			zoom_manager.open_zoom("dining_room_clock_drawer_inscription", true)
 		"open_floral_reliquary_close":
 			zoom_manager.open_zoom("dining_room_floral_reliquary_close", true)
+		"open_office_desktop_letters_stack":
+			zoom_manager.open_zoom("office_desktop_letters_stack", true)
+		"open_office_inventory_box":
+			if GameState.get_flag("office_box_opened"):
+				_open_office_box_zoom(false, true)
+			else:
+				zoom_manager.open_zoom("office_inventory_box", true)
 		"pickup_small_key":
 			if Inventory.add_item("item_small_victorian_key"):
 				GameState.set_flag("bedroom_small_key_collected", true)
@@ -570,11 +588,23 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			if Inventory.add_item("item_scribbled_napkin"):
 				GameState.set_flag("dining_room_scribbled_napkin_collected", true)
 				show_message("Você pegou um guardanapo rabiscado.")
+			_open_dining_room_table_zoom(false)
 		"pickup_botany_book":
 			if Inventory.add_item("item_botany_book"):
 				GameState.set_flag("library_botany_book_collected", true)
 				show_message("Você pegou um livro de botânica.")
 			_open_library_bookshelf_zoom(false)
+		"pickup_flame_medallion":
+			if Inventory.add_item("item_flame_medallion"):
+				GameState.set_flag("office_flame_medallion_collected", true)
+				show_message("Você pegou o medalhão da chama.")
+				_refresh_current_room_state_visuals()
+			_open_office_box_zoom(false)
+		"office_inventory_box_solved":
+			GameState.set_flag("office_box_opened", true)
+			show_message("A caixa da escrivaninha se abriu.")
+			_refresh_current_room_state_visuals()
+			_open_office_box_zoom(false)
 		"floral_reliquary_solved":
 			show_message("O relicário se destravou.")
 			if _check_victory_condition():
@@ -654,6 +684,15 @@ func _open_dining_room_clock_zoom(show_state_feedback: bool = true) -> void:
 		zoom_manager.open_zoom("dining_room_clock_open_with_eye_medallion")
 
 
+func _open_dining_room_table_zoom(show_empty_feedback: bool = true) -> void:
+	if GameState.get_flag("dining_room_scribbled_napkin_collected"):
+		if show_empty_feedback:
+			show_message("A mesa permanece posta.")
+		zoom_manager.open_zoom("dining_room_table_without_scribbled_napkin")
+	else:
+		zoom_manager.open_zoom("dining_room_table_with_scribbled_napkin")
+
+
 func _open_library_bookshelf_zoom(show_empty_feedback: bool = true) -> void:
 	if GameState.get_flag("library_botany_book_collected"):
 		if show_empty_feedback:
@@ -661,6 +700,15 @@ func _open_library_bookshelf_zoom(show_empty_feedback: bool = true) -> void:
 		zoom_manager.open_zoom("library_bookshelf_without_botany_book")
 	else:
 		zoom_manager.open_zoom("library_bookshelf_with_botany_book")
+
+
+func _open_office_box_zoom(show_empty_feedback: bool = true, keep_current_as_parent: bool = false) -> void:
+	if GameState.get_flag("office_flame_medallion_collected"):
+		if show_empty_feedback:
+			show_message(FEEDBACK_EMPTY_OFFICE_BOX)
+		zoom_manager.open_zoom("office_box_open_without_medallion", keep_current_as_parent)
+	else:
+		zoom_manager.open_zoom("office_box_open_with_medallion", keep_current_as_parent)
 
 
 func _is_jewelry_box_empty() -> bool:
