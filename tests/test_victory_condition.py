@@ -22,6 +22,7 @@ class VictoryConditionTest(unittest.TestCase):
         self.assertIn('GameState.get_flag("bedroom_small_key_collected")', victory_function)
         self.assertIn('GameState.get_flag("dining_room_eye_medallion_collected")', victory_function)
         self.assertIn('GameState.get_flag("dining_room_floral_reliquary_solved")', victory_function)
+        self.assertIn('GameState.get_flag("dining_room_spiral_medallion_collected")', victory_function)
         self.assertNotIn('GameState.get_flag("bedroom_box_letter_collected")', victory_function)
 
     def test_each_final_puzzle_step_checks_for_victory(self) -> None:
@@ -30,7 +31,7 @@ class VictoryConditionTest(unittest.TestCase):
         for interaction_id in [
             "pickup_small_key",
             "pickup_eye_medallion",
-            "floral_reliquary_solved",
+            "pickup_spiral_medallion",
         ]:
             branch_match = re.search(
                 rf'"{interaction_id}":\n(?P<branch>.*?)(?=\n\t\t"|\n\t\t_:)',

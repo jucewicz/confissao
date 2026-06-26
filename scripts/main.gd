@@ -517,7 +517,7 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 		"dining_room_table":
 			_open_dining_room_table_zoom()
 		"dining_room_floral_reliquary":
-			zoom_manager.open_zoom("dining_room_floral_reliquary_far")
+			_open_floral_reliquary_far_zoom()
 		"library_bookshelf":
 			_open_library_bookshelf_zoom()
 		"office_box":
@@ -546,7 +546,7 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 		"open_clock_drawer_inscription":
 			zoom_manager.open_zoom("dining_room_clock_drawer_inscription", true)
 		"open_floral_reliquary_close":
-			zoom_manager.open_zoom("dining_room_floral_reliquary_close", true)
+			_open_floral_reliquary_close_zoom(true)
 		"open_office_desktop_letters_stack":
 			zoom_manager.open_zoom("office_desktop_letters_stack", true)
 		"open_office_inventory_box":
@@ -596,6 +596,13 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				show_message("Você pegou o medalhão da chama.")
 				_refresh_current_room_state_visuals()
 			_open_office_box_zoom(false, false, true)
+		"pickup_spiral_medallion":
+			if Inventory.add_item("item_spiral_medallion"):
+				GameState.set_flag("dining_room_spiral_medallion_collected", true)
+				show_message("Você pegou o medalhão espiral.")
+				if _check_victory_condition():
+					return
+			_open_floral_reliquary_reward_close_from_far(false)
 		"office_inventory_box_solved":
 			GameState.set_flag("office_box_opened", true)
 			show_message("A caixa da escrivaninha se abriu.")
@@ -603,8 +610,7 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			_open_office_box_zoom(false, false, true)
 		"floral_reliquary_solved":
 			show_message("O relicário se destravou.")
-			if _check_victory_condition():
-				return
+			_open_floral_reliquary_reward_close_from_far(false)
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
@@ -696,6 +702,49 @@ func _open_library_bookshelf_zoom(show_empty_feedback: bool = true) -> void:
 		zoom_manager.open_zoom("library_bookshelf_without_botany_book")
 	else:
 		zoom_manager.open_zoom("library_bookshelf_with_botany_book")
+
+
+func _open_floral_reliquary_far_zoom(show_empty_feedback: bool = true) -> void:
+	if not GameState.get_flag("dining_room_floral_reliquary_solved"):
+		zoom_manager.open_zoom("dining_room_floral_reliquary_far")
+		return
+
+	if GameState.get_flag("dining_room_spiral_medallion_collected"):
+		if show_empty_feedback:
+			show_message("O relicário está vazio.")
+		zoom_manager.open_zoom("dining_room_floral_reliquary_open_without_spiral_medallion_far")
+	else:
+		zoom_manager.open_zoom("dining_room_floral_reliquary_open_with_spiral_medallion_far")
+
+
+func _open_floral_reliquary_close_zoom(
+	keep_current_as_parent: bool = false,
+	show_empty_feedback: bool = true,
+	preserve_parent_stack: bool = false,
+) -> void:
+	if not GameState.get_flag("dining_room_floral_reliquary_solved"):
+		zoom_manager.open_zoom("dining_room_floral_reliquary_close", keep_current_as_parent, preserve_parent_stack)
+		return
+
+	if GameState.get_flag("dining_room_spiral_medallion_collected"):
+		if show_empty_feedback:
+			show_message("O relicário está vazio.")
+		zoom_manager.open_zoom(
+			"dining_room_floral_reliquary_open_without_spiral_medallion_close",
+			keep_current_as_parent,
+			preserve_parent_stack
+		)
+	else:
+		zoom_manager.open_zoom(
+			"dining_room_floral_reliquary_open_with_spiral_medallion_close",
+			keep_current_as_parent,
+			preserve_parent_stack
+		)
+
+
+func _open_floral_reliquary_reward_close_from_far(show_empty_feedback: bool = true) -> void:
+	_open_floral_reliquary_far_zoom(show_empty_feedback)
+	_open_floral_reliquary_close_zoom(true, show_empty_feedback)
 
 
 func _open_office_box_zoom(
@@ -839,6 +888,7 @@ func _check_victory_condition() -> bool:
 		GameState.get_flag("bedroom_small_key_collected")
 		and GameState.get_flag("dining_room_eye_medallion_collected")
 		and GameState.get_flag("dining_room_floral_reliquary_solved")
+		and GameState.get_flag("dining_room_spiral_medallion_collected")
 	):
 		_show_victory_screen()
 		return true

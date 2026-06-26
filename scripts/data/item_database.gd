@@ -55,6 +55,13 @@ const ITEMS := {
 		"icon": "res://art/items/office/item_flame_medallion.png",
 		"type": "inspectable",
 		"text": ""
+	},
+	"item_spiral_medallion": {
+		"name": "Medalhão espiral",
+		"description": "Um medalhão antigo de metal escurecido, gravado com um nó espiralado.",
+		"icon": "res://art/items/dining_room/item_spiral_medallion.png",
+		"type": "inspectable",
+		"text": ""
 	}
 }
 
