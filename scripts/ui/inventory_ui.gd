@@ -3,6 +3,7 @@ extends Control
 signal item_selected(item_id: String)
 
 const ItemDatabase := preload("res://scripts/data/item_database.gd")
+const InventorySlotButton := preload("res://scripts/ui/inventory_slot_button.gd")
 const SLOT_COUNT := 8
 const SLOT_SIZE := Vector2(88, 88)
 const ICON_MARGIN := 14
@@ -47,7 +48,7 @@ func refresh() -> void:
 
 
 func _create_slot_button(slot_index: int) -> TextureButton:
-	var button := TextureButton.new()
+	var button := InventorySlotButton.new()
 	button.custom_minimum_size = SLOT_SIZE
 	button.pivot_offset = SLOT_SIZE * 0.5
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -61,6 +62,7 @@ func _create_slot_button(slot_index: int) -> TextureButton:
 
 	if slot_index < Inventory.items.size():
 		var item_id: String = Inventory.items[slot_index]
+		button.item_id = item_id
 		var item_data := ItemDatabase.get_item(item_id)
 		button.tooltip_text = item_data.get("name", item_id)
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND

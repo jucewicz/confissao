@@ -15,6 +15,7 @@ func _ready() -> void:
 func refresh_state_visuals() -> void:
 	background.texture = DEFAULT_OFFICE_BACKGROUND
 	_update_box_cursor()
+	_update_safe_cursor()
 
 
 func _bind_interactables(node: Node) -> void:
@@ -37,3 +38,13 @@ func _update_box_cursor() -> void:
 		box_hotspot.cursor_type = "pickup"
 	else:
 		box_hotspot.cursor_type = "inspect"
+
+
+func _update_safe_cursor() -> void:
+	var safe_hotspot := get_node_or_null("Content/Hotspots/SafeHotspot")
+	if safe_hotspot == null:
+		return
+	if GameState.get_flag("office_safe_opened") and not GameState.get_flag("office_silver_key_collected"):
+		safe_hotspot.cursor_type = "pickup"
+	else:
+		safe_hotspot.cursor_type = "inspect"

@@ -7,6 +7,7 @@ signal interacted(interaction_id: String)
 @export var enabled_flag: String = ""
 @export var disabled_flag: String = ""
 @export_enum("interact", "pickup", "grab", "inspect", "blocked") var cursor_type: String = "interact"
+@export var accepted_drop_item_ids: PackedStringArray = []
 
 
 func _ready() -> void:
@@ -41,6 +42,32 @@ func is_available() -> bool:
 	if disabled_flag != "" and GameState.get_flag(disabled_flag):
 		return false
 	return true
+
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	return _get_dropped_inventory_item_id(data) in accepted_drop_item_ids and is_available()
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	var dropped_item_id := _get_dropped_inventory_item_id(data)
+	if dropped_item_id == "" or dropped_item_id not in accepted_drop_item_ids or not is_available():
+		return
+
+	GameState.set_value("_dropped_inventory_item_id", dropped_item_id)
+	AudioManager.play_sfx("click")
+	interacted.emit(interaction_id)
+
+
+func _get_dropped_inventory_item_id(data: Variant) -> String:
+	if not (data is Dictionary):
+		return ""
+	if data.get("type", "") != "inventory_item":
+		return ""
+
+	var item_id_variant: Variant = data.get("item_id", "")
+	if not (item_id_variant is String):
+		return ""
+	return item_id_variant
 
 
 func _get_control_cursor_shape() -> Control.CursorShape:

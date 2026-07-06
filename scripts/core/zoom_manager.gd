@@ -39,6 +39,7 @@ var zoom_scenes := {
 	"dining_room_floral_reliquary_open_without_spiral_medallion_far": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_open_without_spiral_medallion_far.tscn"),
 	"dining_room_floral_reliquary_open_with_spiral_medallion_close": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_open_with_spiral_medallion_close.tscn"),
 	"dining_room_floral_reliquary_open_without_spiral_medallion_close": preload("res://scenes/zooms/dining_room/zoom_floral_reliquary_open_without_spiral_medallion_close.tscn"),
+	"library_book_path_puzzle": preload("res://scenes/zooms/library/zoom_book_path_puzzle.tscn"),
 	"library_bookshelf_with_botany_book": preload("res://scenes/zooms/library/zoom_bookshelf_with_botany_book.tscn"),
 	"library_bookshelf_without_botany_book": preload("res://scenes/zooms/library/zoom_bookshelf_without_botany_book.tscn"),
 	"office_desktop": preload("res://scenes/zooms/office/zoom_office_desktop.tscn"),
@@ -46,6 +47,9 @@ var zoom_scenes := {
 	"office_inventory_box": preload("res://scenes/zooms/office/zoom_office_inventory_box.tscn"),
 	"office_box_open_with_medallion": preload("res://scenes/zooms/office/zoom_office_box_open_with_medallion.tscn"),
 	"office_box_open_without_medallion": preload("res://scenes/zooms/office/zoom_office_box_open_without_medallion.tscn"),
+	"office_safe_closed": preload("res://scenes/zooms/office/zoom_office_safe_closed.tscn"),
+	"office_safe_open_with_key": preload("res://scenes/zooms/office/zoom_office_safe_open_with_key.tscn"),
+	"office_safe_open_empty": preload("res://scenes/zooms/office/zoom_office_safe_open_empty.tscn"),
 }
 
 

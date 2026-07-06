@@ -49,10 +49,24 @@ const ITEMS := {
 		"type": "inspectable",
 		"text": ""
 	},
+	"item_royal_family_emblem": {
+		"name": "Emblema da família real",
+		"description": "Um emblema pesado de metal dourado, marcado por uma flor-de-lis coroada.",
+		"icon": "res://art/items/library/item_royal_family_emblem.png",
+		"type": "inspectable",
+		"text": ""
+	},
 	"item_flame_medallion": {
 		"name": "Medalhão da chama",
 		"description": "Um medalhão antigo de metal escurecido, gravado com uma chama.",
 		"icon": "res://art/items/office/item_flame_medallion.png",
+		"type": "inspectable",
+		"text": ""
+	},
+	"item_silver_key": {
+		"name": "Chave prateada",
+		"description": "Uma chave prateada ornamentada, retirada do cofre.",
+		"icon": "res://art/items/office/item_silver_key.png",
 		"type": "inspectable",
 		"text": ""
 	},

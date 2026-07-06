@@ -13,6 +13,20 @@ const FEEDBACK_CLOCK_ALIGNED := "Os pêndulos permanecem alinhados."
 const FEEDBACK_EMPTY_CLOCK_COMPARTMENT := "O compartimento está vazio."
 const FEEDBACK_EMPTY_LIBRARY_SHELF := "O espaço do livro ficou vazio."
 const FEEDBACK_EMPTY_OFFICE_BOX := "A caixa está vazia."
+const FEEDBACK_EMPTY_SAFE := "O cofre está vazio."
+const SAFE_EMBLEM_SLOT_STATE_KEY := "office_safe_emblem_slots"
+const SAFE_EMBLEM_ITEM_IDS := [
+	"item_eye_medallion",
+	"item_flame_medallion",
+	"item_spiral_medallion",
+	"item_royal_family_emblem",
+]
+const SAFE_EMBLEM_SLOT_INTERACTIONS := [
+	"place_safe_emblem_0",
+	"place_safe_emblem_1",
+	"place_safe_emblem_2",
+	"place_safe_emblem_3",
+]
 const BLOCKED_SHAKE_DISTANCE := 12.0
 const BLOCKED_SHAKE_STEP_TIME := 0.04
 const ROOM_FADE_TIME := 0.25
@@ -484,6 +498,8 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 		"go_dining_room":
 			go_to_room("dining_room")
 		"go_center_locked":
+			if _check_victory_condition():
+				return
 			show_message(FEEDBACK_DOES_NOT_OPEN_HERE)
 			AudioManager.play_sfx("blocked")
 			_play_current_room_blocked_shake()
@@ -518,17 +534,27 @@ func _on_room_interaction_requested(interaction_id: String) -> void:
 			_open_dining_room_table_zoom()
 		"dining_room_floral_reliquary":
 			_open_floral_reliquary_far_zoom()
+		"library_book_path_puzzle":
+			zoom_manager.open_zoom("library_book_path_puzzle")
 		"library_bookshelf":
 			_open_library_bookshelf_zoom()
+		"pickup_royal_family_emblem":
+			_pickup_royal_family_emblem()
 		"office_box":
 			zoom_manager.open_zoom("office_desktop")
+		"office_safe":
+			_open_office_safe_zoom()
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
 
 
 func _on_zoom_interaction_requested(interaction_id: String) -> void:
-	if _has_selected_inventory_item() and not _can_selected_item_handle_zoom_interaction(interaction_id):
+	if (
+		not _has_pending_dropped_inventory_item()
+		and _has_selected_inventory_item()
+		and not _can_selected_item_handle_zoom_interaction(interaction_id)
+	):
 		_show_wrong_selected_item_feedback()
 		return
 
@@ -554,12 +580,18 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				_open_office_box_zoom(false, true)
 			else:
 				zoom_manager.open_zoom("office_inventory_box", true)
+		"place_safe_emblem_0":
+			_place_safe_emblem_in_slot(0)
+		"place_safe_emblem_1":
+			_place_safe_emblem_in_slot(1)
+		"place_safe_emblem_2":
+			_place_safe_emblem_in_slot(2)
+		"place_safe_emblem_3":
+			_place_safe_emblem_in_slot(3)
 		"pickup_small_key":
 			if Inventory.add_item("item_small_victorian_key"):
 				GameState.set_flag("bedroom_small_key_collected", true)
 				show_message("Você pegou uma pequena chave.")
-				if _check_victory_condition():
-					return
 			_refresh_jewelry_box_after_pickup()
 		"pickup_box_letter":
 			if Inventory.add_item("item_box_letter"):
@@ -590,6 +622,8 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 				GameState.set_flag("library_botany_book_collected", true)
 				show_message("Você pegou um livro de botânica.")
 			_open_library_bookshelf_zoom(false)
+		"pickup_royal_family_emblem":
+			_pickup_royal_family_emblem()
 		"pickup_flame_medallion":
 			if Inventory.add_item("item_flame_medallion"):
 				GameState.set_flag("office_flame_medallion_collected", true)
@@ -600,9 +634,13 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 			if Inventory.add_item("item_spiral_medallion"):
 				GameState.set_flag("dining_room_spiral_medallion_collected", true)
 				show_message("Você pegou o medalhão espiral.")
-				if _check_victory_condition():
-					return
 			_open_floral_reliquary_reward_close_from_far(false)
+		"pickup_silver_key":
+			if Inventory.add_item("item_silver_key"):
+				GameState.set_flag("office_silver_key_collected", true)
+				show_message("Você pegou a chave prateada.")
+				_refresh_current_room_state_visuals()
+			_open_office_safe_zoom(false)
 		"office_inventory_box_solved":
 			GameState.set_flag("office_box_opened", true)
 			show_message("A caixa da escrivaninha se abriu.")
@@ -611,12 +649,19 @@ func _on_zoom_interaction_requested(interaction_id: String) -> void:
 		"floral_reliquary_solved":
 			show_message("O relicário se destravou.")
 			_open_floral_reliquary_reward_close_from_far(false)
+		"library_book_path_puzzle_solved":
+			show_message("Os livros formaram um caminho contínuo.")
+			_refresh_current_room_state_visuals()
 		_:
 			show_message(FEEDBACK_NO_CHANGE)
 			AudioManager.play_sfx("invalid")
 
 
 func _on_inventory_item_selected(item_id: String) -> void:
+	if _should_select_inventory_item_for_current_zoom(item_id):
+		show_message("Escolha um encaixe no cofre.")
+		return
+
 	var item_data := ItemDatabase.get_item(item_id)
 	var item_type: String = item_data.get("type", "")
 	if item_type == "readable" or item_type == "inspectable":
@@ -704,6 +749,13 @@ func _open_library_bookshelf_zoom(show_empty_feedback: bool = true) -> void:
 		zoom_manager.open_zoom("library_bookshelf_with_botany_book")
 
 
+func _pickup_royal_family_emblem() -> void:
+	if Inventory.add_item("item_royal_family_emblem"):
+		GameState.set_flag("library_royal_family_emblem_collected", true)
+		show_message("Você pegou o emblema da família real.")
+		_refresh_current_room_state_visuals()
+
+
 func _open_floral_reliquary_far_zoom(show_empty_feedback: bool = true) -> void:
 	if not GameState.get_flag("dining_room_floral_reliquary_solved"):
 		zoom_manager.open_zoom("dining_room_floral_reliquary_far")
@@ -760,6 +812,93 @@ func _open_office_box_zoom(
 		zoom_manager.open_zoom("office_box_open_with_medallion", keep_current_as_parent, preserve_parent_stack)
 
 
+func _open_office_safe_zoom(show_empty_feedback: bool = true) -> void:
+	if not GameState.get_flag("office_safe_opened"):
+		zoom_manager.open_zoom("office_safe_closed")
+		return
+
+	if GameState.get_flag("office_silver_key_collected"):
+		if show_empty_feedback:
+			show_message(FEEDBACK_EMPTY_SAFE)
+		zoom_manager.open_zoom("office_safe_open_empty")
+	else:
+		zoom_manager.open_zoom("office_safe_open_with_key")
+
+
+func _place_safe_emblem_in_slot(slot_index: int) -> void:
+	var item_id := _get_pending_safe_emblem_item_id()
+	if item_id == "" or item_id not in SAFE_EMBLEM_ITEM_IDS or not Inventory.has_item(item_id):
+		_show_wrong_selected_item_feedback()
+		return
+
+	var slot_state := _get_safe_emblem_slot_state()
+	var slot_key := str(slot_index)
+	if slot_state.has(slot_key):
+		show_message("Esse encaixe já está ocupado.")
+		AudioManager.play_sfx("wrong_item")
+		_clear_selected_inventory_item()
+		return
+
+	if item_id in slot_state.values():
+		show_message("Esse emblema já foi encaixado.")
+		AudioManager.play_sfx("wrong_item")
+		_clear_selected_inventory_item()
+		return
+
+	slot_state[slot_key] = item_id
+	GameState.set_value(SAFE_EMBLEM_SLOT_STATE_KEY, slot_state)
+	Inventory.remove_item(item_id)
+	_clear_selected_inventory_item()
+
+	if slot_state.size() >= SAFE_EMBLEM_ITEM_IDS.size():
+		GameState.set_flag("office_safe_opened", true)
+		show_message("O cofre se abriu.")
+		AudioManager.play_sfx("puzzle_correct")
+		_refresh_current_room_state_visuals()
+		zoom_manager.open_zoom("office_safe_open_with_key")
+		return
+
+	show_message("O emblema se encaixou.")
+	AudioManager.play_sfx("click")
+	_refresh_current_zoom_state_visuals()
+
+
+func _get_pending_safe_emblem_item_id() -> String:
+	var dropped_item_id: Variant = GameState.get_value("_dropped_inventory_item_id", "")
+	if dropped_item_id is String and dropped_item_id != "":
+		GameState.set_value("_dropped_inventory_item_id", "")
+		return dropped_item_id
+
+	return _get_selected_inventory_item_id()
+
+
+func _has_pending_dropped_inventory_item() -> bool:
+	var dropped_item_id: Variant = GameState.get_value("_dropped_inventory_item_id", "")
+	return dropped_item_id is String and dropped_item_id != ""
+
+
+func _get_safe_emblem_slot_state() -> Dictionary:
+	var saved_state: Variant = GameState.get_value(SAFE_EMBLEM_SLOT_STATE_KEY, {})
+	if not (saved_state is Dictionary):
+		return {}
+	return saved_state.duplicate()
+
+
+func _refresh_current_zoom_state_visuals() -> void:
+	var current_zoom_variant: Variant = zoom_manager.get("current_zoom")
+	if current_zoom_variant is Node and current_zoom_variant.has_method("refresh_state_visuals"):
+		current_zoom_variant.refresh_state_visuals()
+
+
+func _should_select_inventory_item_for_current_zoom(item_id: String) -> bool:
+	if item_id not in SAFE_EMBLEM_ITEM_IDS:
+		return false
+	if GameState.get_flag("office_safe_opened"):
+		return false
+	var current_zoom_id_variant: Variant = zoom_manager.get("current_zoom_id")
+	return current_zoom_id_variant is String and current_zoom_id_variant == "office_safe_closed"
+
+
 func _is_jewelry_box_empty() -> bool:
 	return (
 		GameState.get_flag("bedroom_jewelry_box_solved")
@@ -791,6 +930,8 @@ func _can_selected_item_handle_room_interaction(interaction_id: String) -> bool:
 	match interaction_id:
 		"go_center_locked":
 			return true
+		"office_safe":
+			return _get_selected_inventory_item_id() in SAFE_EMBLEM_ITEM_IDS
 		"go_bedroom", "go_office", "go_library", "go_dining_room":
 			return false
 		_:
@@ -799,6 +940,8 @@ func _can_selected_item_handle_room_interaction(interaction_id: String) -> bool:
 
 func _can_selected_item_handle_zoom_interaction(interaction_id: String) -> bool:
 	match interaction_id:
+		"place_safe_emblem_0", "place_safe_emblem_1", "place_safe_emblem_2", "place_safe_emblem_3":
+			return _get_selected_inventory_item_id() in SAFE_EMBLEM_ITEM_IDS
 		_:
 			return false
 
@@ -884,12 +1027,7 @@ func _check_victory_condition() -> bool:
 	if has_won_game:
 		return true
 
-	if (
-		GameState.get_flag("bedroom_small_key_collected")
-		and GameState.get_flag("dining_room_eye_medallion_collected")
-		and GameState.get_flag("dining_room_floral_reliquary_solved")
-		and GameState.get_flag("dining_room_spiral_medallion_collected")
-	):
+	if GameState.get_flag("office_silver_key_collected"):
 		_show_victory_screen()
 		return true
 

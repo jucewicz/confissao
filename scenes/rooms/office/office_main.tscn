@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/rooms/office_controller.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/backgrounds/office/office_new.png" id="2"]
@@ -6,6 +6,9 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_desktop"]
 size = Vector2(525, 240)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_safe"]
+size = Vector2(165, 205)
 
 [node name="OfficeMain" type="Node2D"]
 script = ExtResource("1")
@@ -27,3 +30,12 @@ cursor_type = "inspect"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/BoxHotspot"]
 shape = SubResource("RectangleShape2D_desktop")
+
+[node name="SafeHotspot" type="Area2D" parent="Content/Hotspots"]
+position = Vector2(294, 603)
+script = ExtResource("3")
+interaction_id = "office_safe"
+cursor_type = "inspect"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Content/Hotspots/SafeHotspot"]
+shape = SubResource("RectangleShape2D_safe")
