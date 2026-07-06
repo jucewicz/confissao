@@ -180,7 +180,7 @@ func _create_menu_button(label_text: String, action: String) -> Button:
 
 func _get_subtitle_text() -> String:
 	if menu_mode == "victory":
-		return "As primeiras provas foram reunidas. A casa ainda guarda segredos, e eles serão revelados na entrega final."
+		return "Parabens, todas as provas foram coletadas"
 	if menu_mode == "pause":
 		return "O silencio permanece. Respire antes de continuar."
 	return "Uma casa antiga, cartas escondidas e portas que so cedem a verdade."
